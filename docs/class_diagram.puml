@@ -1,0 +1,34 @@
+@startuml
+class Extractor {
+  - api_client : APIClient
+  - logger : Logger
+  - oldest_record : JSON
+  - current_data : JSON
+  - max_retries : Integer
+  + Extractor(api_client: APIClient, logger: Logger, max_retries: Integer)
+  + extract(oldest_record: JSON) : JSON
+  - handle_duplicate(current_data: JSON, oldest_record: JSON) : void
+  - handle_missing(current_data: JSON, oldest_record: JSON) : void
+  - get_missing_data(oldest_record: JSON, policy: RetryPolicy) : JSON
+  - should_retry() : boolean
+  - get_last_sent_request(): JSON
+}
+
+class APIClient {
+  - base_url : String
+  - headers : Hash
+  - timeout : Integer
+  + get(endpoint: String, params: Hash) : String
+}
+
+class Logger {
+  - log_path : String
+  - last_log : String
+  + log_info(message: String) : void
+  + log_error(error: String) : void
+}
+
+Logger -up-*  Extractor
+APIClient -right-*  Extractor
+
+@enduml
