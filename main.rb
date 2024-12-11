@@ -1,8 +1,13 @@
-require 'minitest/autorun'
-require 'minitest/reporters'
-Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new) if defined?(Minitest::Reporters)
+require_relative './lib/extractor'
+require_relative './lib/api_client'
+require_relative './lib/logger'
 
-# Charger les fichiers du projet
-require_relative 'lib/extractor'
-require_relative 'lib/api_client'
-require_relative 'lib/logger'
+# Initialisation des dépendances
+api_client = APIClient.new(base_url: 'https://api.example.com', headers: { 'Authorization' => 'Bearer token' }, timeout: 10)
+logger = Logger.new(log_path: 'log.txt')
+extractor = Extractor.new(api_client: api_client, logger: logger, max_retries: 3)
+
+# Exemple d'utilisation
+oldest_record = {} # JSON object initial
+result = extractor.extract(oldest_record: oldest_record)
+puts "Extraction result: #{result}"
