@@ -5,7 +5,14 @@ services:
     build:
       context: .
     volumes:
-      - .:/app   
+      - .:/app
+    command: ruby main.rb
     ports:
-      - "4000:3000" 
-    command: ruby main.rb 
+      - "4000:3000" # Si ton application utilise un serveur web
+
+  tests:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    command: ruby run_tests.rb
