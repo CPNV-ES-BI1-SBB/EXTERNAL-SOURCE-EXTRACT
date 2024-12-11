@@ -1,0 +1,28 @@
+{
+    "trains": [
+      {
+        "train_number": "IC1234",
+        "departure_time": "2024-12-01T00:01:00",
+        "arrival_time": "2024-12-01T00:45:00",
+        "from": "Lausanne",
+        "to": "Geneva",
+        "status": "On Time"
+      },
+      {
+        "train_number": "IC5678",
+        "departure_time": "2024-12-01T00:15:00",
+        "arrival_time": "2024-12-01T01:00:00",
+        "from": "Lausanne",
+        "to": "Bern",
+        "status": "Delayed"
+      },
+      {
+        "train_number": "RE91011",
+        "departure_time": "2024-12-01T00:30:00",
+        "arrival_time": "2024-12-01T00:50:00",
+        "from": "Lausanne",
+        "to": "Fribourg",
+        "status": "On Time"
+      }
+    ]
+  }
