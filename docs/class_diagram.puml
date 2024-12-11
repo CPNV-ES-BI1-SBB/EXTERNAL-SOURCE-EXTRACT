@@ -9,7 +9,7 @@ class Extractor {
   + extract(oldest_record: JSON) : JSON
   - handle_duplicate(current_data: JSON, oldest_record: JSON) : Promise
   - handle_missing(current_data: JSON, oldest_record: JSON) : Promise
-  - get_missing_data(oldest_record: JSON, policy: RetryPolicy) : JSON
+  - get_missing_data(oldest_record: JSON) : JSON
   - should_retry() : boolean
   - get_last_sent_request(): JSON
 }
