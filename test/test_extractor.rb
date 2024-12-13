@@ -117,6 +117,40 @@ class TestExtractor < Minitest::Test
     end
   end  
 
+  def test_handle_missing_data_and_duplicates_until_all_data_are_unique_and_retrieved
+    # Given: Oldest_record, missing data, duplicates
+    mock_file_path_missing_duplicates_and_missing = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_missing_duplicate_data_and_missing_data.json')
+    mock_response_with_only_duplicates = {}
+    mock_file_path_complete = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
+    mock_response_missing_duplicates_and_missing = JSON.parse(File.read(mock_file_path_missing_duplicates_and_missing))
+    mock_response_complete = JSON.parse(File.read(mock_file_path_complete))
+
+    # Mock the API call to return the missing data first and then the complete data
+    @api_client.stub(:get, lambda {
+      call_count += 1
+      call_count == 1 ? mock_response_missing_duplicates_and_missing : mock_response_with_only_duplicates
+    }) do
+      # When: Extracting data
+      result = @extractor.extract(oldest_record_stored: @oldest_record_stored)
+      
+      # Then: Should fill the holes in the data, remove duplicates and return a list of all records and log the result
+      
+      # First handle missing data
+      # Ensure handle_missing fills the holes in the data
+      mock_response_with_only_duplicates = result
+
+      # Set the current data with after handling missing data
+      assert_equal @current_data, mock_response_with_only_duplicates
+
+      # Ensure `handle_missing` is invoked and it recalls extract to get the complete data
+      assert_equal 2, call_count
     end
+      # Ensure handle_duplicate removes duplicates
+      assert_equal mock_response_complete, result_complete
+
+      # Ensure the variables are updated
+      assert_equal mock_response_complete, @extractor.current_data
+      assert_equal mock_response_complete["connections"].last, @extractor.oldest_record_stored["connections"].last
+      assert_equal mock_response_complete["connections"].first, @extractor.newest_record_received["connections"].first
   end
-end
+
