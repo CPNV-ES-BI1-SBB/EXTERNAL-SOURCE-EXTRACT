@@ -154,3 +154,30 @@ class TestExtractor < Minitest::Test
       assert_equal mock_response_complete["connections"].first, @extractor.newest_record_received["connections"].first
   end
 
+  def test_handle_multiple_retries_until_max_retries_0
+    # Given: Oldest_record, at least one missing data and/or duplicate, max_retries = 3
+    mock_file_path_missing = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_missing_data.json')
+    mock_response_missing = JSON.parse(File.read(mock_file_path_missing))
+  
+    # Simulate retry logic with max_retries = 3
+    call_count = 0
+    @api_client.stub(:get, lambda {
+      call_count += 1
+      # Mock missing data responses for the first 3 calls
+      if call_count <= 3
+        mock_response_missing
+      else
+        mock_response_missing
+      end
+    }) do
+      # When: Extracting data while max_retries = 3
+      @extractor.extract(oldest_record_stored: @oldest_record_stored)
+      
+      # Then: Should retry until max_retries = 0
+      @max_retries = 0
+
+      # Ensure extract is called 3 times until max_retries = 0
+      assert_equal 3, call_count
+    end
+  end  
+
