@@ -94,6 +94,29 @@ class TestExtractor < Minitest::Test
       end
   end
 
+  def test_handle_duplicates_until_all_data_are_unique
+    # Given: Oldest_record, no missing data, duplicates
+    mock_file_path_duplicates = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_duplicates.json')
+    mock_file_path_unique = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
+    mock_response_duplicates = JSON.parse(File.read(mock_file_path_duplicates))
+    mock_response_unique = JSON.parse(File.read(mock_file_path_unique))
+  
+    # Mock the API call to simulate duplicate data response
+    @api_client.stub(:get, mock_response_duplicates) do
+
+      # When: Extracting data
+      result = @extractor.extract(oldest_record_stored: @oldest_record_stored)
+
+      # Then: Should remove duplicates and return a list of all records and log the result
+      assert_equal mock_response_unique, result
+
+      # Ensure the variables are updated
+      assert_equal mock_response_unique, @extractor.current_data
+      assert_equal mock_response_unique["connections"].last, @extractor.oldest_record_stored["connections"].last
+      assert_equal mock_response_unique["connections"].first, @extractor.newest_record_received["connections"].first
+    end
+  end  
+
     end
   end
 end
