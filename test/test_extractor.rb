@@ -28,7 +28,7 @@ class TestExtractor < Minitest::Test
       result = @extractor.extract(oldest_record: {})
 
       # Then: Should return a list of all records and log the result
-      assert_equal mock_response["trains"], result
+      assert_equal mock_response["connections"], result
       @oldest_record = result.last
       assert_includes @logger.last_log, "Extraction result: #{result}"
     end
