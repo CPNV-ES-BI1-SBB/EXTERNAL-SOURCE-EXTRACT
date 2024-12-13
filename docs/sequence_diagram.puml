@@ -1,0 +1,45 @@
+@startuml
+actor Manager
+participant "Extractor" as Extractor
+participant "Logger" as Logger
+participant "ApiClient" as ApiClient
+participant "API" as API
+title Title: Sequence diagram \nDate: 13.12.2024\nAuthors: Benoît Pierrehumbert & Philippe Moeckli
+Manager -> Extractor: extract()
+Extractor -> ApiClient: get()
+ApiClient -> API: request()
+API --> ApiClient: response()
+ApiClient --> Extractor: response()
+
+loop Handle missing data
+    Extractor -> Extractor: handle_missing()
+    note right of Extractor: Compare oldest_record_stored\nwith newest_record_received\nif match, no missing data\nelse, missing data found
+    alt missing data found
+        note right of Extractor: Chech max_retries
+        alt max_retries >= 1
+            alt is data still missing
+                note right of Extractor: Decrease max_retries by 1
+                Extractor -> Extractor: extract() (recursively with max_retries - 1)
+            else data found
+                Extractor -> Logger: log_info("Data found")
+                note right of Extractor: Return current_data out of loop
+            end
+        else max_retries < 1
+            Extractor -> Logger: log_error("Max retries exceeded, missing data : \noldest_record_stored + newest_record_received")
+            note right of Extractor: Return current_data out of loop
+        end
+    else no missing data
+        note right of Extractor: Data integrity validated
+    end
+note right of Extractor: merge_results(current_data, new_data)
+end
+
+Extractor -> Extractor: handle_duplicates()
+Extractor -> Logger: log_info("Session records logged + timestamp")
+Extractor -> Logger: log_info("Oldest record stored: updated")
+Extractor -> Logger: log_info("Newest record received: updated")
+Extractor -> Manager: return current_data
+
+
+
+@enduml
