@@ -7,6 +7,11 @@ class TestExtractor < Minitest::Test
     @api_client = APIClient.new(base_url: 'https://api.example.com', headers: {}, timeout: 5)
     @logger = Logger.new(log_path: 'test_log.txt')
     @extractor = Extractor.new(api_client: @api_client, logger: @logger, max_retries: 3)
+    @oldest_record_stored = { 
+      "connections": [
+        { "time": "2024-01-12 00:00:00" }
+      ]
+    }
   end
 
   def teardown
