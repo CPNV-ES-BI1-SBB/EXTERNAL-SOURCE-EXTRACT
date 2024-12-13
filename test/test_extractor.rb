@@ -181,3 +181,20 @@ class TestExtractor < Minitest::Test
     end
   end  
 
+  def test_should_throw_an_exception_if_max_retries_is_reached
+    # Given: Oldest_record, at least one missing data and/or duplicate, max_retries= 0
+    mock_file_path_missing = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_missing_data.json')
+    mock_response_missing = JSON.parse(File.read(mock_file_path_missing))
+    @max_retries = 0
+    
+    # Mock the API call to return missing data indefinitely
+    @api_client.stub(:get, mock_response_missing) do
+      
+      # Then: Should throw an exception if max_retries is reached
+      assert_raises(Extractor::MaxRetriesReachedError) do
+        # When: Extracting data with missing data and max_retries = 0
+        @extractor.extract(oldest_record_stored: @oldest_record_stored)
+      end
+    end
+  end  
+end
