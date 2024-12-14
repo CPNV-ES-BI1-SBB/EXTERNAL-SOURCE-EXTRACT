@@ -25,6 +25,8 @@ We chose Ruby because it meets the following requirements:
 - `oldest_record_stored`: The oldest record stored in the system that is the time of the last connection of a stationboard.
 - `newest_record_received`: The newest record received from the API that is the time of the last connection of a stationboard.
 
+- Info: the oldest record stored will be the newest record received from the api after the extraction process.
+
 ## Other choices
 
 ### Timestamp in Data
