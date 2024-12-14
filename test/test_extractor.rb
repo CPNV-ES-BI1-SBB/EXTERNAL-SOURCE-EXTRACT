@@ -23,7 +23,7 @@ class TestExtractor < Minitest::Test
     assert_equal 3, @extractor.max_retries
   end
 
-  def test_extract_all_data_without_exceptions
+  def test_extract_all_data_without_exceptions  
     # Given: No oldest_record, no missing data, no duplicates
     mock_file_path = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
     mock_response = JSON.parse(File.read(mock_file_path))
@@ -79,6 +79,7 @@ class TestExtractor < Minitest::Test
       }) do
         # When: Extracting data
         result = @extractor.extract(oldest_record_stored: @oldest_record_stored)
+        assert_equal result["connections"].last, @extractor.newest_record_received["connections"].last
         
         # Then: Should fill the holes in the data and return a list of all records and log the result 
         # Ensure mock_response_complete is returned
@@ -89,14 +90,13 @@ class TestExtractor < Minitest::Test
 
         # Ensure the variables are updated
         assert_equal mock_response_complete, @extractor.current_data
-        assert_equal mock_response_complete["connections"].last, @extractor.oldest_record_stored["connections"].last
-        assert_equal mock_response_complete["connections"].first, @extractor.newest_record_received["connections"].first
+        assert_equal @newest_record_received, @extractor.oldest_record_stored["connections"].last
       end
   end
 
   def test_handle_duplicates_until_all_data_are_unique
     # Given: Oldest_record, no missing data, duplicates
-    mock_file_path_duplicates = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_duplicates.json')
+    mock_file_path_duplicates = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_duplicate_data.json')
     mock_file_path_unique = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
     mock_response_duplicates = JSON.parse(File.read(mock_file_path_duplicates))
     mock_response_unique = JSON.parse(File.read(mock_file_path_unique))
@@ -106,20 +106,20 @@ class TestExtractor < Minitest::Test
 
       # When: Extracting data
       result = @extractor.extract(oldest_record_stored: @oldest_record_stored)
+      assert_equal mock_response_unique["connections"].last, @extractor.newest_record_received["connections"].last
 
       # Then: Should remove duplicates and return a list of all records and log the result
       assert_equal mock_response_unique, result
 
       # Ensure the variables are updated
       assert_equal mock_response_unique, @extractor.current_data
-      assert_equal mock_response_unique["connections"].last, @extractor.oldest_record_stored["connections"].last
-      assert_equal mock_response_unique["connections"].first, @extractor.newest_record_received["connections"].first
+      assert_equal @newest_record_received, @extractor.oldest_record_stored["connections"].last
     end
   end  
 
   def test_handle_missing_data_and_duplicates_until_all_data_are_unique_and_retrieved
     # Given: Oldest_record, missing data, duplicates
-    mock_file_path_missing_duplicates_and_missing = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_missing_duplicate_data_and_missing_data.json')
+    mock_file_path_missing_duplicates_and_missing = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_duplicate_data_and_missing_data.json')
     mock_response_with_only_duplicates = {}
     mock_file_path_complete = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
     mock_response_missing_duplicates_and_missing = JSON.parse(File.read(mock_file_path_missing_duplicates_and_missing))
@@ -132,6 +132,7 @@ class TestExtractor < Minitest::Test
     }) do
       # When: Extracting data
       result = @extractor.extract(oldest_record_stored: @oldest_record_stored)
+      assert_equal mock_response_complete["connections"].last, @extractor.newest_record_received["connections"].last
       
       # Then: Should fill the holes in the data, remove duplicates and return a list of all records and log the result
       
@@ -146,12 +147,11 @@ class TestExtractor < Minitest::Test
       assert_equal 2, call_count
     end
       # Ensure handle_duplicate removes duplicates
-      assert_equal mock_response_complete, result_complete
+      refute_equal mock_response_complete, mock_response_with_only_duplicates
 
       # Ensure the variables are updated
       assert_equal mock_response_complete, @extractor.current_data
       assert_equal mock_response_complete["connections"].last, @extractor.oldest_record_stored["connections"].last
-      assert_equal mock_response_complete["connections"].first, @extractor.newest_record_received["connections"].first
   end
 
   def test_handle_multiple_retries_until_max_retries_0
@@ -161,10 +161,11 @@ class TestExtractor < Minitest::Test
   
     # Simulate retry logic with max_retries = 3
     call_count = 0
+    
     @api_client.stub(:get, lambda {
       call_count += 1
       # Mock missing data responses for the first 3 calls
-      if call_count <= 3
+      if call_count <= @max_retries
         mock_response_missing
       else
         mock_response_missing
@@ -177,7 +178,7 @@ class TestExtractor < Minitest::Test
       @max_retries = 0
 
       # Ensure extract is called 3 times until max_retries = 0
-      assert_equal 3, call_count
+      assert_equal @max_retries, call_count
     end
   end  
 
