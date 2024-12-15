@@ -1,17 +1,18 @@
 @startuml
+
+skinparam classAttributeIconSize 0
 class Extractor {
   - api_client : APIClient
   - logger : Logger
-  - oldest_record : JSON
+  - oldest_record_stored : JSON
+  - newest_record_received : JSON
   - current_data : JSON
   - max_retries : Integer
   + Extractor(api_client: APIClient, logger: Logger, max_retries: Integer)
-  + extract(oldest_record: JSON) : JSON
-  - handle_duplicate(current_data: JSON, oldest_record: JSON) : Promise
-  - handle_missing(current_data: JSON, oldest_record: JSON) : Promise
-  - get_missing_data(oldest_record: JSON) : JSON
-  - should_retry() : boolean
-  - get_last_sent_request(): JSON
+  + extract(oldest_record_stored: JSON) : JSON
+  - handle_duplicate(current_data: JSON, oldest_record_stored: JSON) : Promise
+  - handle_missing(current_data: JSON, oldest_record_stored: JSON) : Promise
+  - get_oldest_record_recieved(current_data: JSON) : JSON
 }
 
 class APIClient {
@@ -31,4 +32,10 @@ class Logger {
 Logger -up-*  Extractor
 APIClient -right-*  Extractor
 
+note as N1
+  Title: Class diagram
+  Date: 13.12.2024
+  Authors: Benoît Pierrehumbert & 
+  Philippe Moeckli
+end note
 @enduml

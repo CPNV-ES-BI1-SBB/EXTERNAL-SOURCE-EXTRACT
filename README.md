@@ -1,52 +1,67 @@
 # EXTERNAL-SOURCE-EXTRACT
 
-# Behavior tests
+## Description
 
-## Test 1
-- Should extract all data without exceptions
+This project is designed to extract data from an external source and handle various data integrity issues such as missing data and duplicates. It includes a set of tests to ensure the functionality works as expected.
 
-- Given: APIClient instance, Logger instance, no oldest_record, no missing data, no duplicates
-- When: Extracting data
-- Then: Should return a list of all records and log the result
+## Getting Started
 
-## Test 2
-- Should extract all data from the oldest_record without exceptions
+### Prerequisites
 
-- Given: APIClient instance, Logger instance, oldest_record, no missing data, no duplicates
-- When: Extracting data
-- Then: Should return a list of all records and log the result
+- Ruby 3.3.0+
+- Bundler
 
-## Test 3
-- Should handle missing data until all data are retrieved
+### Installation
 
-- Given: APIClient instance, Logger instance, oldest_record, missing data, no duplicates
-- When: Extracting data
-- Then: Should fill the holes in the data and return a list of all records and log the result
+1. Clone the repository:
+    ```sh
+    git clone git@github.com:CPNV-ES-BI1-SBB/EXTERNAL-SOURCE-EXTRACT.git
+    ```
 
-## Test 4
-- Should handle duplicates until all data are unique
+2. Install dependencies:
+    ```sh
+    bundle install
+    ```
 
-- Given: APIClient instance, Logger instance, oldest_record, no missing data, duplicates
-- When: Extracting data
-- Then: Should remove duplicates and return a list of all records and log the result
+### Running the Project
 
-## Test 5
-- Should handle missing data and duplicates until all data are unique and retrieved
+#### Using Ruby
 
-- Given: APIClient instance, Logger instance, oldest_record, missing data, duplicates
-- When: Extracting data
-- Then: Should fill the holes in the data, remove duplicates and return a list of all records and log the result
+1. Run the main script:
+    ```sh
+    ruby main.rb
+    ```
 
-## Test 6
-- Should handle multiple retries until should_retry returns False
+### Running Tests
 
-- Given: APIClient instance, Logger instance, oldest_record, at least one missing data and/or duplicate, should_retry returns True
-- When: Extracting data while should_retry returns True
-- Then: Should retry until should_retry returns False
+#### Using Ruby
 
-## Test 7
-- Should throw an exception if max_retries is reached
+1. Run the test script:
+    ```sh
+    ruby run_tests.rb
+    ```
 
-- Given: APIClient instance, Logger instance, oldest_record, at least one missing data and/or duplicate, max_retries=0
-- When: Failed to extract data
-- Then: Should throw an exception
+## Directory Structure
+
+```
+├── config/
+│   └── config.yml
+├── docs/
+│   ├── class_diagram.puml
+│   └── sequence_diagram.puml
+├── lib/
+│   ├── api_client.rb
+│   ├── extractor.rb
+│   └── logger.rb
+├── main.rb
+├── README.md
+├── run_tests.rb
+├── test/
+│   ├── mocks/
+│   ├── test_extractor.rb
+│   └── test_helper.rb
+```
+
+## Contact
+
+If needed, you can create an issue on GitHub, and we will try to respond as quickly as possible.

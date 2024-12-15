@@ -1,5 +1,5 @@
 class Extractor
-  attr_accessor :api_client, :logger, :max_retries, :current_data, :oldest_record
+  attr_accessor :api_client, :logger, :max_retries, :current_data, :oldest_record_stored, :newest_record_received
 
   def initialize(api_client:, logger:, max_retries: 3)
     @api_client = api_client
