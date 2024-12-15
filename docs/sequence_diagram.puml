@@ -4,7 +4,7 @@ participant "Extractor" as Extractor
 participant "Logger" as Logger
 participant "ApiClient" as ApiClient
 participant "API" as API
-title Title: Sequence diagram \nDate: 13.12.2024\nAuthors: Benoît Pierrehumbert & Philippe Moeckli
+title Title: Sequence diagram \nDate: 15.12.2024\nAuthors: Benoît Pierrehumbert & Philippe Moeckli
 Manager -> Extractor: extract()
 Extractor -> ApiClient: get()
 ApiClient -> API: request()
