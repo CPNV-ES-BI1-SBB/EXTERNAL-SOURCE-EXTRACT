@@ -19,14 +19,22 @@ class APIClient {
   - base_url : String
   - headers : Hash
   - timeout : Integer
-  + get(endpoint: String, params: Hash) : String
+  + APIClient(base_url: String, headers: Hash, timeout: Integer)
+  + get(endpoint: String, params: Hash) : JSON
+  - make_request(uri: URI, request: Net::HTTP::Get) : Net::HTTPResponse
+  - handle_response(response: Net::HTTPResponse) : JSON
 }
 
 class Logger {
   - log_path : String
   - last_log : String
+  - file : File
+  + Logger(log_path: String)
   + log_info(message: String) : void
   + log_error(error: String) : void
+  + archive_log(archive_dir: String) : void
+  - write_log(log_message: String) : void
+  - timestamp() : String
 }
 
 Logger -up-*  Extractor
