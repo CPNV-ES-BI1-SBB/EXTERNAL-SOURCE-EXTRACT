@@ -9,5 +9,5 @@ extractor = Extractor.new(api_client: api_client, logger: logger, max_retries: 3
 
 # Exemple d'utilisation
 oldest_record = {} # JSON object initial
-result = extractor.extract(oldest_record: oldest_record)
+result = extractor.extract(oldest_record_stored: oldest_record)
 puts "Extraction result: #{result}"

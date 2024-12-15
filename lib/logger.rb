@@ -8,7 +8,7 @@
 class Logger
   attr_reader :last_log
 
-  def initialize(log_path)
+  def initialize(log_path:)
     @log_path = log_path
     @file = File.open(@log_path, 'a')
   end
