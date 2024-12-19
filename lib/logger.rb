@@ -1,11 +1,11 @@
 ##
 # A logger class that writes log messages to a file.
-# 
+#
 # Use this class to log messages at different levels (INFO and ERROR) to a file.
-# 
+#
 # @param log_path [String] The path to the log file.
-# 
-class Logger
+#
+class CLogger
   attr_reader :last_log
 
   def initialize(log_path:)
@@ -39,11 +39,11 @@ class Logger
 
   ##
   # Archives the log file the file handle with the current log messages and the timestamp.
-  # 
+  #
   # Call this method when you're done logging messages.
-  # 
+  #
   # @param archive_dir [String] The directory to archive the log file in.
-  # 
+  #
   def archive_log(archive_dir)
     Dir.mkdir(archive_dir) unless Dir.exist?(archive_dir)
 

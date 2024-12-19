@@ -9,7 +9,7 @@ class Extractor {
   - current_data : JSON
   - max_retries : Integer
   + Extractor(api_client: APIClient, logger: Logger, max_retries: Integer)
-  + extract(oldest_record_stored: JSON) : JSON
+  + extract(oldest_record_stored: JSON, endpoint: String) : JSON
   - handle_duplicate(current_data: JSON, oldest_record_stored: JSON) : Promise
   - handle_missing(current_data: JSON, oldest_record_stored: JSON) : Promise
   - get_oldest_record_recieved(current_data: JSON) : JSON
