@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Extract API Service
+  version: 1.0.0
+  description: API to extract data from a specified endpoint.
+paths:
+  /data:
+    get:
+      summary: Retrieve data
+      description: Extracts data from the specified API endpoint. Filters data based on the provided record with a timestamp.
+      parameters:
+        - name: endpoint
+          in: query
+          description: The target API endpoint from which to extract data.
+          required: true
+          schema:
+            type: string
+        - name: newest_record_stored
+          in: query
+          description: JSON object containing metadata about the most recent record retrieved, including a timestamp for filtering newer records.
+          required: false
+          schema:
+            type: object
+            properties:
+              time:
+                type: string
+                format: date-t
+                description: The timestamp of the most recent record. Only records newer than this time will be returned.
+              other_properties:
+                type: object
+                additionalProperties: true
+                description: Other metadata related to the record.
+      responses:
+        '200':
+          description: Data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+                  newest_record:
+                    type: object
+                    properties:
+                      time:
+                        type: string
+                        format: date-time
+                        description: The timestamp of the newest record returned.
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
