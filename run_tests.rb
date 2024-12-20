@@ -8,6 +8,3 @@ require_relative 'lib/api_client'
 require_relative 'lib/logger'
 
 require_relative 'test/test_extractor'
-
-# Run the tests
-Minitest.run
