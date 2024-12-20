@@ -1,6 +1,7 @@
 require 'time'
 
 class Extractor
+  class MaxRetriesReachedError < StandardError;end
   attr_accessor :api_client, :logger, :max_retries, :current_data, :newest_record_stored, :oldest_record_retrieved
 
   def initialize(api_client:, logger:, max_retries: 3)
@@ -41,7 +42,7 @@ class Extractor
       @logger.log_info("Data successfully extracted and merged.")
 
     rescue StandardError => e
-      @logger.log_error("Error during extraction: #{e.message}")
+      # @logger.log_error("Error during extraction: #{e.message}")
       @max_retries -= 1
       retry if @max_retries > 0
       @logger.log_error("Max retries reached. Extraction failed.")
@@ -49,19 +50,26 @@ class Extractor
 
     handle_duplicate()
     @logger.log_info("Session records logged.")
-    @logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
-    @logger.log_info("Newest record stored: #{@newest_record_stored}")
+    #@logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
+    #@logger.log_info("Newest record stored: #{@newest_record_stored}")
+    @current_data = JSON.parse(@current_data)
+    @newest_record_stored = @current_data.last
     @current_data
   end
 
 
   # Handle duplicate records
-  def handle_duplicate()
+  def handle_duplicate
     @logger.log_info("Checking for duplicates...")
+
+    if @current_data.nil? || @current_data.empty?
+      @logger.log_info("No data to process for duplicates.")
+      return
+    end
+
     initial_size = @current_data.size
-    @current_data = @current_data['connections']
-    @current_data['connections'].uniq! { |record| record }
-    @logger.log_info("Duplicates removed: #{@current_data.size - initial_size}")
+    # @current_data.uniq! { |record| record['id'] }
+    @logger.log_info("Duplicates removed: #{initial_size - @current_data.size}")
   end
 
   # Handle missing records
@@ -84,7 +92,6 @@ class Extractor
   # Retrieve missing data (mock implementation)
   def get_missing_data(newest_record_stored:)
     if @max_retries > 0
-      puts "newest_record_stored: '#{newest_record_stored}'"
       extract(newest_record_stored: newest_record_stored, endpoint: '/data')
       @max_retries -= 1
     else
@@ -95,7 +102,7 @@ class Extractor
   # Determine the oldest record received
   def get_oldest_record_retrieved(current_data:)
     unless current_data.is_a?(Array)
-      puts "Error: current_data is not an Array. "
+      logger.log_error("Error: current_data is not an Array. ")
       return nil
     end
 
@@ -106,7 +113,6 @@ class Extractor
       begin
         record["time"] ? Time.parse(record["time"]) : (Time.now + 999999)
       rescue ArgumentError
-        puts "Warning: Invalid 'time' format in record #{record.inspect}"
         Time.now + 999999
       end
     end
@@ -123,5 +129,4 @@ class Extractor
     # Returns a mock request for now
     { endpoint: @endpoint, params: { since: @newest_record_stored } }
   end
-  class MaxRetriesReachedError < StandardError; end
 end
