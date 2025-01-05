@@ -1,4 +1,5 @@
 require 'time'
+require 'json'
 
 class Extractor
   class MaxRetriesReachedError < StandardError;end
@@ -8,33 +9,26 @@ class Extractor
     @api_client = api_client
     @logger = logger
     @max_retries = max_retries
-    @current_data = []
-    @oldest_record_retrieved = nil
+    @current_data = {}
+    @oldest_record_retrieved = {}
   end
 
   # Main extraction method
-  def extract(endpoint: '/data', newest_record_stored: nil)
+  def extract(endpoint: '/data', newest_record_stored: {})
     @endpoint = endpoint
-    @newest_record_stored = newest_record_stored || @newest_record_stored
-    @current_data ||= []
+    @logger.log_info(newest_record_stored)
 
     begin
       @logger.log_info("Starting data extraction...")
 
-      # Charger les données depuis un mock ou une API
-      if false # Toujours charger depuis un mock dans cet exemple
-        file_path = File.expand_path('../test/mocks/mock_shortened.json', __dir__)
-        @logger.log_info("Loading mock data from #{file_path}")
-        @current_data = File.read(file_path)
-        @current_data = JSON.parse(@current_data)
-      else
-        @current_data = @api_client.get(@endpoint, params: { since: @newest_record_stored })
-      end
+      @current_data = @api_client.get(@endpoint)
 
       @logger.log_info("Current data size: #{@current_data.size}")
 
       # Met à jour oldest_record_retrieved
-      @oldest_record_retrieved = @current_data.first['time']
+      @oldest_record_retrieved = @current_data['connections'].last
+
+      @logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
 
       # Gérer les doublons et les données manquantes
       handle_missing()
@@ -42,18 +36,17 @@ class Extractor
       @logger.log_info("Data successfully extracted and merged.")
 
     rescue StandardError => e
-      # @logger.log_error("Error during extraction: #{e.message}")
+      @logger.log_error("Error during extraction: #{e.message}")
       @max_retries -= 1
       retry if @max_retries > 0
       @logger.log_error("Max retries reached. Extraction failed.")
     end
 
     handle_duplicate()
+    @newest_record_stored = @oldest_record_retrieved
     @logger.log_info("Session records logged.")
-    #@logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
-    #@logger.log_info("Newest record stored: #{@newest_record_stored}")
-    @current_data = JSON.parse(@current_data)
-    @newest_record_stored = @current_data.last
+    @logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
+    @logger.log_info("Newest record stored: #{@newest_record_stored}")
     @current_data
   end
 
@@ -73,29 +66,50 @@ class Extractor
   end
 
   # Handle missing records
-  def handle_missing()
+  def handle_missing
     @logger.log_info("Checking for missing data...")
-    if (!@current_data.empty?)
-      # If the newest record received is older than the oldest record stored for more than 15 min, we may have missing data
-      if(@newest_record_stored["time"]!=nil)
-        if @oldest_record_retrieved && Time.parse(@oldest_record_retrieved["time"]) < Time.parse(@newest_record_stored["time"]) - 900
-          get_missing_data()
-          @logger.log_info("Missing data detected: First:#{missing_data.first['time']} Last:#{missing_data.last['time']}")
-        end
+
+    if @current_data['connections'].nil? || @current_data['connections'].empty?
+      @logger.log_info("No connections.")
+      get_missing_data(newest_record_stored: @newest_record_stored)
+      return
+    end
+
+    first_connection_time = @current_data['connections'].first['time']
+    @logger.log_info(first_connection_time)
+    if first_connection_time.nil?
+      @logger.log_error("First connection time missing, cannot validate data integrity.")
+      return
+    end
+
+    begin
+      # Parsing the time and checking if the time is later than 00:15
+      first_time = Time.parse(first_connection_time)
+      midnight = Time.new(first_time.year, first_time.month, first_time.day, 0, 0, 0)
+      fifteen_minutes_after_midnight = midnight + (15 * 60) # 15 minutes in seconds
+  
+      # Check if the first record is later than 00:15
+      if first_time > fifteen_minutes_after_midnight
+        @logger.log_info("Detected missing data: first record is after 15 minutes past midnight.")
+        get_missing_data(newest_record_stored: @newest_record_stored)
+      else
+        @logger.log_info("No missing data detected.")
       end
-    else
-      get_missing_data()
-      @logger.log_info("Missing data detected: First:#{missing_data.first['time']} Last:#{missing_data.last['time']}")
+  
+    rescue ArgumentError => e
+      @logger.log_error("Error parsing time: #{e.message}")
     end
   end
 
-  # Retrieve missing data (mock implementation)
+  # Retrieve missing data with retry
   def get_missing_data(newest_record_stored:)
-    if @max_retries > 0
+    while @max_retries > 0
+      @logger.log_info("Attempting to fetch missing data, retries left: #{@max_retries}")
       extract(newest_record_stored: newest_record_stored, endpoint: '/data')
       @max_retries -= 1
-    else
-      @logger.log_error("Max retries reached. Unable to retrieve missing data.")
+
+      raise MaxRetriesReachedError.new("Max retries reached.") if @max_retries.zero?
+      break unless @current_data.empty?
     end
   end
 

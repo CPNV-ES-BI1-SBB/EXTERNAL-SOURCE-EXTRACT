@@ -1,5 +1,7 @@
 require 'json'
-require_relative 'test_helper'
+require_relative '../lib/extractor'
+require_relative '../lib/api_client'
+require_relative '../lib/logger'
 
 class TestExtractor < Minitest::Test
   def setup
@@ -9,14 +11,12 @@ class TestExtractor < Minitest::Test
     @extractor = Extractor.new(api_client: @api_client, logger: @logger, max_retries: 3)
     @newest_record_stored = {
       "connections": [
-        { "time": "2024-01-12 00:00:00" }
+        { "time": "2024-12-01 00:00:00" }
       ]
     }
   end
 
-  def teardown
-    File.delete('test_log.txt') if File.exist?('test_log.txt')
-  end
+  
 
   def test_initialize
     assert_instance_of Extractor, @extractor
@@ -32,70 +32,63 @@ class TestExtractor < Minitest::Test
     # Mock the API call to return the mock response
     @api_client.stub(:get, mock_response) do
       # When: Extracting data
-      result = @extractor.extract(newest_record_stored: @newest_record_stored)
+      result = @extractor.extract(endpoint: '/data', newest_record_stored: @newest_record_stored)
 
       # Then: Should return a list of all records and log the result
       assert_equal mock_response, result
 
       # Ensure the variables are updated
       assert_equal mock_response, @extractor.current_data
-      puts mock_response["connections"].last
-      puts '_______________________'
-      puts @extractor.newest_record_stored
       assert_equal mock_response["connections"].last, @extractor.newest_record_stored
-      assert_equal mock_response["connections"]['time'].first, @extractor.oldest_record_retrieved
     end
   end
 
-  # def test_extract_all_data_from_the_oldest_record_without_exceptions
-  #   # Given: Oldest record, no missing data, no duplicates
-  #   mock_file_path = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
-  #   mock_response = JSON.parse(File.read(mock_file_path))
+  def test_extract_all_data_from_the_oldest_record_without_exceptions
+  # Given: Oldest record, no missing data, no duplicates
+  mock_file_path = File.join(__dir__, 'mocks', 'mock_shortened.json')
+  mock_response = JSON.parse(File.read(mock_file_path))
 
-  #   # Mock the API call to return the mock response
-  #   @api_client.stub(:get, mock_response) do
-  #     # When: Extracting data
-  #     result = @extractor.extract(newest_record_stored: @newest_record_stored)
+  #  Mock the API call to return the mock response
+  @api_client.stub(:get, mock_response) do
+      # When: Extracting data
+      result = @extractor.extract(endpoint: '/data', newest_record_stored: @newest_record_stored)
 
-  #     # Then: Should return a list of all records and log the result
-  #     assert_equal mock_response, result
+      # Then: Should return a list of all records and log the result
+      assert_equal mock_response, result
 
-  #     # Ensure the variables are updated
-  #     assert_equal mock_response, @extractor.current_data
-  #     assert_equal mock_response["connections"].last, @extractor.newest_record_stored["connections"].last
-  #     assert_equal mock_response["connections"].first, @extractor.oldest_record_retrieved["connections"].first
-  #   end
-  # end
+      # Ensure the variables are updated
+      assert_equal mock_response, @extractor.current_data
+      assert_equal mock_response["connections"].last, @extractor.newest_record_stored
+      assert_equal mock_response["connections"].last, @extractor.oldest_record_retrieved
+    end
+  end
 
-  # def test_handle_missing_data_until_all_data_are_retrieved
-  #   # Given: Oldest_record, missing data, no duplicates
-  #   mock_file_path_missing = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_missing_data.json')
-  #   mock_file_path_complete = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
-  #   mock_response_missing = JSON.parse(File.read(mock_file_path_missing))
-  #   mock_response_complete = JSON.parse(File.read(mock_file_path_complete))
-  #   call_count = 0
-
-  #     # Mock the API call to return the missing data first and then the complete data
-  #     @api_client.stub(:get, lambda {
-  #       call_count += 1
-  #       call_count == 1 ? mock_response_missing : mock_response_complete
-  #     }) do
-  #       # When: Extracting data
-  #       result = @extractor.extract(newest_record_stored: @newest_record_stored)
-  #       assert_equal result["connections"].last, @extractor.oldest_record_retrieved["connections"].last
-
-  #       # Then: Should fill the holes in the data and return a list of all records and log the result
-  #       # Ensure mock_response_complete is returned
-  #       assert_equal mock_response_complete, result
-
-  #       # Ensure `handle_missing` is invoked and it recalls extract to get the complete data
-  #       assert_equal 2, call_count
-
-  #       # Ensure the variables are updated
-  #       assert_equal mock_response_complete, @extractor.current_data
-  #       assert_equal @oldest_record_retrieved, @extractor.newest_record_stored["connections"].last
-  #     end
-  # end
+  def test_handle_missing_data_until_all_data_are_retrieved
+    # Given: A missing data scenario
+    mock_file_path_missing = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01_missing_data.json')
+    mock_file_path_complete = File.join(__dir__, 'mocks', 'mock_stationboard_lausanne_2024_12_01.json')
+    mock_response_missing = JSON.parse(File.read(mock_file_path_missing))
+    mock_response_complete = JSON.parse(File.read(mock_file_path_complete))
+  
+    # This call_count ensures proper response switching
+    call_count = 0
+  
+    # Use a lambda that switches behavior based on call count
+    @api_client.stub(:get, lambda { |endpoint|
+      call_count += 1
+      if call_count == 1
+        mock_response_missing
+      else
+        mock_response_complete
+      end
+    }) do
+      # When: Extracting data
+      result = @extractor.extract(newest_record_stored: @newest_record_stored)
+  
+      # Then: Should fill the holes in the data and return a list of all records
+      assert_equal mock_response_complete, result, "The complete data should be returned after retries."
+    end
+  end    
 
   # def test_handle_duplicates_until_all_data_are_unique
   #   # Given: Oldest_record, no missing data, duplicates

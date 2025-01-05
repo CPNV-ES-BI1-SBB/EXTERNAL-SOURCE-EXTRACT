@@ -10,9 +10,6 @@
   },
   "connections": [
     {
-      "_comment": "Missing data first connection is 15 minutes after 0:02. 3 connections were deleted"
-    },
-    {
       "time": "2024-01-12 00:22:00",
       "*G": "R",
       "*L": "1",
