@@ -1,10 +1,17 @@
 require 'time'
 require 'json'
 
+# Extractor class to handle data extraction from an API.
+# This class is responsible for extracting data, handling missing data, and removing duplicates.
 class Extractor
   class MaxRetriesReachedError < StandardError;end
   attr_accessor :api_client, :logger, :max_retries, :current_data, :newest_record_stored, :oldest_record_retrieved, :endpoint
 
+  # Initializes a new Extractor instance.
+  #
+  # @param api_client [Object] The API client for data extraction.
+  # @param logger [Object] A logger instance for logging events.
+  # @param max_retries [Integer] The maximum number of retries allowed (default: 3).
   def initialize(api_client:, logger:, max_retries: 3)
     @api_client = api_client
     @logger = logger
@@ -13,8 +20,12 @@ class Extractor
     @oldest_record_retrieved = {}
   end
 
-  # Main extraction method
-  def extract(endpoint: '/data', newest_record_stored: {})
+  # Main method to extract data from the API, checking for missing data and duplicates.
+  #
+  # @param endpoint [String] The endpoint to query for data.
+  # @param newest_record_stored [Hash] The most recent record stored.
+  # @return [Hash] The extracted data.
+  def extract(endpoint: '', newest_record_stored: {})
     @endpoint = endpoint
     @logger.log_info(newest_record_stored)
 
@@ -44,8 +55,8 @@ class Extractor
     @current_data
   end
 
+  private
 
-  # Handle duplicate records
   def handle_duplicate
     @logger.log_info("Checking for duplicates...")
 
@@ -70,11 +81,10 @@ class Extractor
     end
   end
 
-
-  # Handle missing records
   def handle_missing
     @logger.log_info("Checking for missing data...")
 
+    # Check if there are any connections
     if @current_data['connections'].nil? || @current_data['connections'].empty?
       @logger.log_info("No connections.")
       get_missing_data(newest_record_stored: @newest_record_stored)
