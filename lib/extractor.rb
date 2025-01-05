@@ -3,7 +3,7 @@ require 'json'
 
 class Extractor
   class MaxRetriesReachedError < StandardError;end
-  attr_accessor :api_client, :logger, :max_retries, :current_data, :newest_record_stored, :oldest_record_retrieved
+  attr_accessor :api_client, :logger, :max_retries, :current_data, :newest_record_stored, :oldest_record_retrieved, :endpoint
 
   def initialize(api_client:, logger:, max_retries: 3)
     @api_client = api_client
@@ -34,12 +34,6 @@ class Extractor
       handle_missing()
 
       @logger.log_info("Data successfully extracted and merged.")
-
-    rescue StandardError => e
-      @logger.log_error("Error during extraction: #{e.message}")
-      @max_retries -= 1
-      retry if @max_retries > 0
-      @logger.log_error("Max retries reached. Extraction failed.")
     end
 
     handle_duplicate()
@@ -113,46 +107,14 @@ class Extractor
     end
   end
 
-  # Retrieve missing data with retry
   def get_missing_data(newest_record_stored:)
-    while @max_retries > 0
-      @logger.log_info("Attempting to fetch missing data, retries left: #{@max_retries}")
-      extract(newest_record_stored: newest_record_stored, endpoint: '/data')
+    @logger.log_info("Retries left: #{@max_retries}")
+    if @max_retries > 0
       @max_retries -= 1
-
-      raise MaxRetriesReachedError.new("Max retries reached.") if @max_retries.zero?
-      break unless @current_data.empty?
+      @logger.log_info("Retrying data extraction...")
+      extract(newest_record_stored: newest_record_stored, endpoint: @endpoint)
+    else
+      raise MaxRetriesReachedError, "Max retries reached. Cannot retrieve missing data."
     end
-  end
-
-  # Determine the oldest record received
-  def get_oldest_record_retrieved(current_data:)
-    unless current_data.is_a?(Array)
-      logger.log_error("Error: current_data is not an Array. ")
-      return nil
-    end
-
-    # Si current_data est vide, on sort tôt.
-    return nil if current_data.empty?
-
-    result = current_data.min_by do |record|
-      begin
-        record["time"] ? Time.parse(record["time"]) : (Time.now + 999999)
-      rescue ArgumentError
-        Time.now + 999999
-      end
-    end
-    result
-  end
-
-  # Determine whether retries are allowed
-  def should_retry
-    @max_retries > 0
-  end
-
-  # Retrieve the last sent request (mock implementation)
-  def get_last_sent_request
-    # Returns a mock request for now
-    { endpoint: @endpoint, params: { since: @newest_record_stored } }
-  end
+  end  
 end
