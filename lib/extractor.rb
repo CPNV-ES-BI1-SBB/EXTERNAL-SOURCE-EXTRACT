@@ -55,15 +55,27 @@ class Extractor
   def handle_duplicate
     @logger.log_info("Checking for duplicates...")
 
-    if @current_data.nil? || @current_data.empty?
-      @logger.log_info("No data to process for duplicates.")
+    if @current_data['connections'].nil? || @current_data['connections'].empty?
+      @logger.log_info("No data to check for duplicates.")
       return
     end
 
-    initial_size = @current_data.size
-    # @current_data.uniq! { |record| record['id'] }
-    @logger.log_info("Duplicates removed: #{initial_size - @current_data.size}")
+    # Convert each record to a hash string for comparison
+    initial_size = @current_data['connections'].size
+
+    # Remove duplicates based on the entire record being the same
+    @current_data['connections'].uniq! { |record| record.to_json }
+
+    duplicates_removed = initial_size - @current_data['connections'].size
+    @logger.log_info("Duplicates removed: #{duplicates_removed}")
+
+    if duplicates_removed > 0
+      @logger.log_info("Duplicate records were found and removed.")
+    else
+      @logger.log_info("No duplicate records detected.")
+    end
   end
+
 
   # Handle missing records
   def handle_missing
