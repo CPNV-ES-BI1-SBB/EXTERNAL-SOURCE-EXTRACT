@@ -52,6 +52,7 @@ class Extractor
     @logger.log_info("Session records logged.")
     @logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
     @logger.log_info("Newest record stored: #{@newest_record_stored}")
+    @logger.archive_log('archive')
     @current_data
   end
 
