@@ -13,6 +13,13 @@ require 'json'
 class APIClient
   attr_accessor :base_url, :headers, :timeout
 
+  ##
+  # Initializes a new APIClient instance.
+  # 
+  # @param base_url [String] The base URL for the API.
+  # @param headers [Hash] Optional headers to include in requests.
+  # @param timeout [Integer] Timeout in seconds for requests.
+  #
   def initialize(base_url:, headers: {}, timeout: 30)
     @base_url = base_url
     @headers = headers

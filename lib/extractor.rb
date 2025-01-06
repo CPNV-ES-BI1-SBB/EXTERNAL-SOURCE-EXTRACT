@@ -1,8 +1,10 @@
 require 'time'
 require 'json'
 
+##
 # Extractor class to handle data extraction from an API.
 # This class is responsible for extracting data, handling missing data, and removing duplicates.
+# 
 class Extractor
   class MaxRetriesReachedError < StandardError;end
   attr_accessor :api_client, :logger, :max_retries, :current_data, :newest_record_stored, :oldest_record_retrieved, :endpoint
@@ -20,11 +22,13 @@ class Extractor
     @oldest_record_retrieved = {}
   end
 
+  ##
   # Main method to extract data from the API, checking for missing data and duplicates.
   #
   # @param endpoint [String] The endpoint to query for data.
-  # @param newest_record_stored [Hash] The most recent record stored.
-  # @return [Hash] The extracted data.
+  # @param newest_record_stored [JSON] The most recent record stored.
+  # @return [JSON] The extracted data.
+  # 
   def extract(endpoint: '', newest_record_stored: {})
     @endpoint = endpoint
     @logger.log_info(newest_record_stored)
