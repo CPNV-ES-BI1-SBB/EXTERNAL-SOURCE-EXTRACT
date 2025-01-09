@@ -28,7 +28,6 @@ class HTTPClient
   uri.query = URI.encode_www_form(params) unless params.empty?
 
   request = Net::HTTP::Get.new(uri)
-  @headers.each { |key, value| request[key] = value } if defined?(@headers)
 
   make_request(uri, request)
   end
@@ -38,7 +37,7 @@ class HTTPClient
   def make_request(uri, request)
     response = nil
 
-    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', read_timeout: @timeout) do |http|
+    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       response = http.request(request)
     end
 

@@ -8,7 +8,7 @@ class TestExtractor < Minitest::Test
     # Given an API client, a logger
     @endpoint = 'https://api.example.com/data'
     @http_client = HTTPClient.new()
-    @logger = CLogger.new(log_path:'test_log.txt')
+    @logger = CLogger.new(log_path: ENV.fetch('TEST_LOG_PATH', 'test_log.txt'))
     @extractor = Extractor.new()
     @newest_record_stored = {
       "connections": [

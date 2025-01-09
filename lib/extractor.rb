@@ -17,8 +17,8 @@ class Extractor
   # @param max_retries [Integer] The maximum number of retries allowed (default: 3).
   def initialize()
     @http_client = nil
-    @max_retries = 3
-    @logger = CLogger.new(log_path:'extractor_log.txt')
+    @max_retries = ENV.fetch('MAX_RETRIES', 3).to_i
+    @logger = CLogger.new(log_path: ENV.fetch('EXTRACTOR_LOG_PATH', 'extractor_log.txt'))
     @max_retries = max_retries
     @current_data = {}
     @oldest_record_retrieved = {}

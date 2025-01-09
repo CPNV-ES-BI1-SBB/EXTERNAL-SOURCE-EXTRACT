@@ -3,13 +3,14 @@ require 'json'
 require_relative 'lib/extractor'
 require_relative 'lib/http_client'
 require_relative 'lib/logger'
+require 'dotenv/load'
 
 # Configure Sinatra
-set :bind, '0.0.0.0'
-set :port, 4567
+set :bind, ENV.fetch('BIND_ADDRESS', '0.0.0.0')
+set :port, ENV.fetch('PORT', '4567').to_i
 
 # Logger instance for the application
-logger = CLogger.new(log_path: 'server_log.txt')
+logger = CLogger.new(log_path: ENV.fetch('SERVER_LOG_PATH', 'server_log.txt'))
 
 # Define the /api/v1/extract endpoint
 get '/api/v1/extract' do
