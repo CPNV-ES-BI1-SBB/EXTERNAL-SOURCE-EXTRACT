@@ -34,8 +34,11 @@ class Logger {
   - timestamp() : String
 }
 
+Exception MaxRetriesReachedError {}
+
 Extractor ..> HTTPClient
 Extractor ..> Logger
+Extractor ..> MaxRetriesReachedError
 
 note as N1
   Title: Updated Class Diagram
