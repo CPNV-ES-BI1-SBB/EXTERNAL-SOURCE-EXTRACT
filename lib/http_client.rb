@@ -21,11 +21,16 @@ class HTTPClient
   #
   # @raise [StandardError] If the request fails.
   #
-  def get(endpoint, params = {}, headers = {}, timeout = 30)
-    request = Net::HTTP::Get.new(endpoint)
-    @headers.each { |key, value| request[key] = value }
+  def get(endpoint, params = {})
+  uri = URI(endpoint)
 
-    make_request(endpoint, request)
+  # Add query params to the URL
+  uri.query = URI.encode_www_form(params) unless params.empty?
+
+  request = Net::HTTP::Get.new(uri)
+  @headers.each { |key, value| request[key] = value } if defined?(@headers)
+
+  make_request(uri, request)
   end
 
   private
@@ -49,7 +54,7 @@ class HTTPClient
         raise StandardError, "Failed to parse JSON response: #{e.message}"
       end
     else
-      raise StandardError, "HTTP Error: #{response.code} - #{response.message}"
+      raise StandardError, "HTTP Error: #{response.code} - #{response.message} - #{response.body}"
     end
   end
 end
