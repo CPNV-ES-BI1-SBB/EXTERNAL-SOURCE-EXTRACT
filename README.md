@@ -24,6 +24,13 @@ bundler --version
    bundle install
    ```
 
+2. Set environment variables in `.env` file by copying the `.env.example` file:
+   ```sh
+   cp .env.example .env
+   ```
+
+3. Update the `.env` file with the required environment variables.
+
 ## Running the Project
 
 You can run the application locally to extract data using the provided API:
