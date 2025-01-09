@@ -10,7 +10,7 @@ require 'json'
 # @param headers [Hash] Optional headers to include in requests (e.g., authorization tokens).
 # @param timeout [Integer] Timeout in seconds for requests. Default is 30 seconds.
 #
-class APIClient
+class HTTPClient
   attr_accessor :base_url, :headers, :timeout
 
   ##

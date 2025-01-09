@@ -1,14 +1,14 @@
 require 'json'
 require_relative '../lib/extractor'
-require_relative '../lib/api_client'
+require_relative '../lib/http_client'
 require_relative '../lib/logger'
 
 class TestExtractor < Minitest::Test
   def setup
     # Given an API client, a logger
-    @api_client = APIClient.new(base_url: 'https://api.example.com', headers: {}, timeout: 5)
+    @http_client = HTTPClient.new(base_url: 'https://api.example.com', headers: {}, timeout: 5)
     @logger = CLogger.new(log_path:'test_log.txt')
-    @extractor = Extractor.new(api_client: @api_client, logger: @logger, max_retries: 3)
+    @extractor = Extractor.new(http_client: @http_client, logger: @logger, max_retries: 3)
     @newest_record_stored = {
       "connections": [
         { "time": "2024-12-01 00:00:00" }
@@ -30,7 +30,7 @@ class TestExtractor < Minitest::Test
     @newest_record_stored = {}
 
     # Mock the API call to return the mock response
-    @api_client.stub(:get, mock_response) do
+    @http_client.stub(:get, mock_response) do
       # When: Extracting data
       result = @extractor.extract(endpoint: '/data', newest_record_stored: @newest_record_stored)
 
@@ -49,7 +49,7 @@ class TestExtractor < Minitest::Test
   mock_response = JSON.parse(File.read(mock_file_path))
 
   #  Mock the API call to return the mock response
-  @api_client.stub(:get, mock_response) do
+  @http_client.stub(:get, mock_response) do
       # When: Extracting data
       result = @extractor.extract(endpoint: '/data', newest_record_stored: @newest_record_stored)
 
@@ -74,7 +74,7 @@ class TestExtractor < Minitest::Test
     call_count = 0
   
     # Use a lambda that switches behavior based on call count
-    @api_client.stub(:get, lambda { |endpoint|
+    @http_client.stub(:get, lambda { |endpoint|
       call_count += 1
       if call_count == 1
         mock_response_missing
@@ -98,7 +98,7 @@ class TestExtractor < Minitest::Test
      mock_response_unique = JSON.parse(File.read(mock_file_path_unique))
 
      # Mock the API call to simulate duplicate data response
-     @api_client.stub(:get, mock_response_duplicates) do
+     @http_client.stub(:get, mock_response_duplicates) do
 
        # When: Extracting data
        result = @extractor.extract(newest_record_stored: @newest_record_stored)
@@ -121,7 +121,7 @@ class TestExtractor < Minitest::Test
     call_count = 0
   
     # Use a lambda to simulate multiple conditions in a single test
-    @api_client.stub(:get, lambda { |endpoint|
+    @http_client.stub(:get, lambda { |endpoint|
       call_count += 1
       case call_count
       when 1
@@ -147,7 +147,7 @@ class TestExtractor < Minitest::Test
     # Simulate retry logic with max_retries = 3
     call_count = 0
   
-    @api_client.stub(:get, lambda { |endpoint|
+    @http_client.stub(:get, lambda { |endpoint|
       call_count += 1
       if call_count <= @extractor.max_retries
         mock_response_missing
@@ -174,7 +174,7 @@ class TestExtractor < Minitest::Test
     @max_retries = 0
 
     # Mock the API call to return missing data indefinitely
-    @api_client.stub(:get, mock_response_missing) do
+    @http_client.stub(:get, mock_response_missing) do
 
       # Then: Should throw an exception if max_retries is reached
       assert_raises(Extractor::MaxRetriesReachedError) do

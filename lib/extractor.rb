@@ -7,15 +7,15 @@ require 'json'
 # 
 class Extractor
   class MaxRetriesReachedError < StandardError;end
-  attr_accessor :api_client, :logger, :max_retries, :current_data, :newest_record_stored, :oldest_record_retrieved, :endpoint
+  attr_accessor :http_client, :logger, :max_retries, :current_data, :newest_record_stored, :oldest_record_retrieved, :endpoint
 
   # Initializes a new Extractor instance.
   #
-  # @param api_client [Object] The API client for data extraction.
+  # @param http_client [Object] The API client for data extraction.
   # @param logger [Object] A logger instance for logging events.
   # @param max_retries [Integer] The maximum number of retries allowed (default: 3).
-  def initialize(api_client:, logger:, max_retries: 3)
-    @api_client = api_client
+  def initialize(http_client:, logger:, max_retries: 3)
+    @http_client = http_client
     @logger = logger
     @max_retries = max_retries
     @current_data = {}
@@ -36,7 +36,7 @@ class Extractor
     begin
       @logger.log_info("Starting data extraction...")
 
-      @current_data = @api_client.get(@endpoint)
+      @current_data = @http_client.get(@endpoint)
 
       @logger.log_info("Current data size: #{@current_data.size}")
 
