@@ -80,9 +80,9 @@ Use the following structure for your commit messages:
 
 #### Example Commit Messages
 
-- `feat(extractor): add support for retry logic`
-- `fix(logger): resolve log rotation issue`
-- `docs(readme): update testing instructions`
+- `feat: add support for retry logic`
+- `fix: resolve log rotation issue`
+- `docs: update testing instructions`
 
 ---
 
