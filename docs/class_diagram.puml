@@ -1,25 +1,27 @@
 @startuml
 
 skinparam classAttributeIconSize 0
+
 class Extractor {
-  - api_client : APIClient
+  - http_client : HTTPClient
   - logger : Logger
   - newest_record_stored : JSON
   - oldest_record_retrieved : JSON
   - current_data : JSON
   - max_retries : Integer
   - endpoint : String
-  + Extractor(api_client: APIClient, logger: Logger, max_retries: Integer)
-  + extract(endpoint: String, newest_record_stored: JSON) : JSON
+  + Extractor(max_retries: Integer)
+  + extract(http_client : HTTPClient, endpoint: String, newest_record_stored: JSON) : JSON
   - handle_duplicate(current_data: JSON, oldest_record_stored: JSON) : void
   - handle_missing(current_data: JSON, oldest_record_stored: JSON) : void
+  - get_missing_data(oldest_record_retrieved: JSON) : JSON
 }
 
-class APIClient {
+class HTTPClient {
   - base_url : String
   - headers : Hash
   - timeout : Integer
-  + APIClient(base_url: String, headers: Hash, timeout: Integer)
+  + HTTPClient(base_url: String, headers: Hash, timeout: Integer)
   + get(endpoint: String, params: Hash) : JSON
   - make_request(uri: URI, request: Net::HTTP::Get) : Net::HTTPResponse
   - handle_response(response: Net::HTTPResponse) : JSON
@@ -37,13 +39,13 @@ class Logger {
   - timestamp() : String
 }
 
-Logger -up-*  Extractor
-APIClient -right-*  Extractor
+Extractor ..> HTTPClient
+Extractor ..> Logger
 
 note as N1
-  Title: Class diagram
+  Title: Updated Class Diagram
   Date: 06.01.2025
-  Authors: Benoît Pierrehumbert & 
-  Philippe Moeckli
+  Authors: Benoît Pierrehumbert & Philippe Moeckli
 end note
+
 @enduml
