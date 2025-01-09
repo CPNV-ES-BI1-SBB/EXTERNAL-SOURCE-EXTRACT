@@ -4,10 +4,10 @@ info:
   version: 1.0.0
   description: API to extract data from a specified endpoint.
 paths:
-  /data:
+  /api/v1/extract:
     get:
       summary: Retrieve data
-      description: Extracts data from the specified API endpoint. Filters data based on the provided record with a timestamp.
+      description: Extracts data from the specified API endpoint.
       parameters:
         - name: endpoint
           in: query
@@ -15,21 +15,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: newest_record_stored
-          in: query
-          description: JSON object containing metadata about the most recent record retrieved, including a timestamp for filtering newer records.
-          required: false
-          schema:
-            type: object
-            properties:
-              time:
-                type: string
-                format: date-t
-                description: The timestamp of the most recent record. Only records newer than this time will be returned.
-              other_properties:
-                type: object
-                additionalProperties: true
-                description: Other metadata related to the record.
       responses:
         '200':
           description: Data retrieved successfully
@@ -38,19 +23,48 @@ paths:
               schema:
                 type: object
                 properties:
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      additionalProperties: true
-                  newest_record:
+                  connections:
+                    type: object
+                    additionalProperties: true
+                    description: Extracted data grouped by connection attributes.
+                  metadata:
                     type: object
                     properties:
-                      time:
+                      extracted_at:
                         type: string
                         format: date-time
-                        description: The timestamp of the newest record returned.
+                        description: The timestamp when the data was extracted.
+                      total_connections:
+                        type: integer
+                        description: The total number of connections retrieved.
         '400':
-          description: Bad request
+          description: Bad request - Missing or invalid query parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Missing endpoint parameter
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Max retries reached while trying to extract data
+                  details:
+                    type: string
+                    example: Extraction process stopped after 3 retries
+          headers:
+            X-Error-Type:
+              description: The type of error that occurred.
+              schema:
+                type: string
+                enum:
+                  - MaxRetriesReachedError
+                  - StandardError
