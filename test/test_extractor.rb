@@ -6,17 +6,16 @@ require_relative '../lib/logger'
 class TestExtractor < Minitest::Test
   def setup
     # Given an API client, a logger
-    @http_client = HTTPClient.new(base_url: 'https://api.example.com', headers: {}, timeout: 5)
+    @endpoint = 'https://api.example.com/data'
+    @http_client = HTTPClient.new()
     @logger = CLogger.new(log_path:'test_log.txt')
-    @extractor = Extractor.new(http_client: @http_client, logger: @logger, max_retries: 3)
+    @extractor = Extractor.new()
     @newest_record_stored = {
       "connections": [
         { "time": "2024-12-01 00:00:00" }
       ]
     }
   end
-
-  
 
   def test_initialize
     assert_instance_of Extractor, @extractor
@@ -32,7 +31,7 @@ class TestExtractor < Minitest::Test
     # Mock the API call to return the mock response
     @http_client.stub(:get, mock_response) do
       # When: Extracting data
-      result = @extractor.extract(endpoint: '/data', newest_record_stored: @newest_record_stored)
+      result = @extractor.extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: @newest_record_stored)
 
       # Then: Should return a list of all records and log the result
       assert_equal mock_response, result
@@ -51,7 +50,7 @@ class TestExtractor < Minitest::Test
   #  Mock the API call to return the mock response
   @http_client.stub(:get, mock_response) do
       # When: Extracting data
-      result = @extractor.extract(endpoint: '/data', newest_record_stored: @newest_record_stored)
+      result = @extractor.extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: @newest_record_stored)
 
       # Then: Should return a list of all records and log the result
       assert_equal mock_response, result
@@ -83,7 +82,7 @@ class TestExtractor < Minitest::Test
       end
     }) do
       # When: Extracting data
-      result = @extractor.extract(newest_record_stored: @newest_record_stored)
+      result = @extractor.extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: @newest_record_stored)
   
       # Then: Should fill the holes in the data and return a list of all records
       assert_equal mock_response_complete, result
@@ -101,7 +100,7 @@ class TestExtractor < Minitest::Test
      @http_client.stub(:get, mock_response_duplicates) do
 
        # When: Extracting data
-       result = @extractor.extract(newest_record_stored: @newest_record_stored)
+       result = @extractor.extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: @newest_record_stored)
        
        # Then: Should remove duplicates and return a list of all records and log the result
        assert_equal mock_response_unique, result
@@ -131,7 +130,7 @@ class TestExtractor < Minitest::Test
       end
     }) do
       # When: Extracting data
-      result = @extractor.extract(newest_record_stored: @newest_record_stored)
+      result = @extractor.extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: @newest_record_stored)
   
       # Then: Ensure all missing data and duplicates are handled
       assert_equal mock_response_complete, result
@@ -157,7 +156,7 @@ class TestExtractor < Minitest::Test
     }) do
       begin
         # When: Extracting data while max_retries = 3
-        @extractor.extract(newest_record_stored: @newest_record_stored)
+        @extractor.extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: @newest_record_stored)
       rescue Extractor::MaxRetriesReachedError
         # Bypass the exception and continue
       end
@@ -179,7 +178,7 @@ class TestExtractor < Minitest::Test
       # Then: Should throw an exception if max_retries is reached
       assert_raises(Extractor::MaxRetriesReachedError) do
         # When: Extracting data with missing data and max_retries = 0
-        @extractor.extract(newest_record_stored: @newest_record_stored)
+        @extractor.extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: @newest_record_stored)
       end
     end
   end

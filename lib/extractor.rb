@@ -1,5 +1,6 @@
 require 'time'
 require 'json'
+require 'logger'
 
 ##
 # Extractor class to handle data extraction from an API.
@@ -14,12 +15,15 @@ class Extractor
   # @param http_client [Object] The API client for data extraction.
   # @param logger [Object] A logger instance for logging events.
   # @param max_retries [Integer] The maximum number of retries allowed (default: 3).
-  def initialize(http_client:, logger:, max_retries: 3)
-    @http_client = http_client
-    @logger = logger
+  def initialize()
+    @http_client = nil
+    @max_retries = 3
+    @logger = CLogger.new(log_path:'extractor_log.txt')
     @max_retries = max_retries
     @current_data = {}
     @oldest_record_retrieved = {}
+    @newest_record_stored = {}
+    @endpoint = ''
   end
 
   ##
@@ -29,7 +33,8 @@ class Extractor
   # @param newest_record_stored [JSON] The most recent record stored.
   # @return [JSON] The extracted data.
   # 
-  def extract(endpoint: '', newest_record_stored: {})
+  def extract(http_client:, endpoint:, newest_record_stored: {})
+    @http_client = http_client
     @endpoint = endpoint
     @logger.log_info(newest_record_stored)
 
@@ -126,7 +131,7 @@ class Extractor
     if @max_retries > 0
       @max_retries -= 1
       @logger.log_info("Retrying data extraction...")
-      extract(newest_record_stored: newest_record_stored, endpoint: @endpoint)
+      extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: newest_record_stored)
     else
       raise MaxRetriesReachedError, "Max retries reached. Cannot retrieve missing data."
     end

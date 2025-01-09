@@ -4,25 +4,20 @@ skinparam classAttributeIconSize 0
 
 class Extractor {
   - http_client : HTTPClient
-  - logger : Logger
   - newest_record_stored : JSON
   - oldest_record_retrieved : JSON
   - current_data : JSON
   - max_retries : Integer
   - endpoint : String
-  + Extractor(max_retries: Integer)
-  + extract(http_client : HTTPClient, endpoint: String, newest_record_stored: JSON) : JSON
-  - handle_duplicate(current_data: JSON, oldest_record_stored: JSON) : void
-  - handle_missing(current_data: JSON, oldest_record_stored: JSON) : void
-  - get_missing_data(oldest_record_retrieved: JSON) : JSON
+  - logger : CLogger
+  + extract(http_client : HTTPClient, newest_record_stored: JSON) : JSON
+  - handle_duplicate() : void
+  - handle_missing() : void
+  - get_missing_data(http_client : HTTPClient, oldest_record_retrieved: JSON) : JSON
 }
 
 class HTTPClient {
-  - base_url : String
-  - headers : Hash
-  - timeout : Integer
-  + HTTPClient(base_url: String, headers: Hash, timeout: Integer)
-  + get(endpoint: String, params: Hash) : JSON
+  + get(endpoint: String, params: Hash, headers: Hash, timeout: Integer) : JSON
   - make_request(uri: URI, request: Net::HTTP::Get) : Net::HTTPResponse
   - handle_response(response: Net::HTTPResponse) : JSON
 }

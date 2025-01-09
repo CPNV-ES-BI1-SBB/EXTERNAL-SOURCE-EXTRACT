@@ -11,20 +11,6 @@ require 'json'
 # @param timeout [Integer] Timeout in seconds for requests. Default is 30 seconds.
 #
 class HTTPClient
-  attr_accessor :base_url, :headers, :timeout
-
-  ##
-  # Initializes a new APIClient instance.
-  # 
-  # @param base_url [String] The base URL for the API.
-  # @param headers [Hash] Optional headers to include in requests.
-  # @param timeout [Integer] Timeout in seconds for requests.
-  #
-  def initialize(base_url:, headers: {}, timeout: 30)
-    @base_url = base_url
-    @headers = headers
-    @timeout = timeout
-  end
 
   ##
   # Makes an HTTP GET request to the specified endpoint with optional query parameters.
@@ -35,13 +21,11 @@ class HTTPClient
   #
   # @raise [StandardError] If the request fails.
   #
-  def get(endpoint, params = {})
-    uri = URI.join(@base_url, endpoint)
-
-    request = Net::HTTP::Get.new(uri)
+  def get(endpoint, params = {}, headers = {}, timeout = 30)
+    request = Net::HTTP::Get.new(endpoint)
     @headers.each { |key, value| request[key] = value }
 
-    make_request(uri, request)
+    make_request(endpoint, request)
   end
 
   private
