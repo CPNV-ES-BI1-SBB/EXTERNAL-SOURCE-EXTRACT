@@ -9,7 +9,7 @@ This project is designed to extract data from external sources and handle variou
 Before running the project, ensure you have the following installed:
 
 - **Ruby**: Version `3.3.6`
-- **Bundler**: Version `2.5.23`
+- **Bundler**: Version `2.5.22`
 
 Verify your installed versions:
 ```sh
@@ -69,6 +69,20 @@ The project includes a comprehensive test suite using Minitest. To run the tests
    ```
 
 ---
+
+## Run with Docker
+
+To run the application using Docker:
+
+1. Ensure Docker and Docker Compose are installed on your system.
+
+1. Copy the `.env.example` file to `.env` and configure it with the required environment variables.
+
+1. Build and run the Docker container:
+```sh
+docker compose up --build
+````
+
 
 ## Contributing
 
