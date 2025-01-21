@@ -1,67 +1,120 @@
-# EXTERNAL-SOURCE-EXTRACT
+# External Source Extract
 
 ## Description
 
-This project is designed to extract data from an external source and handle various data integrity issues such as missing data and duplicates. It includes a set of tests to ensure the functionality works as expected.
+This project is designed to extract data from external sources and handle various data integrity issues, such as missing data and duplicates. The application ensures robust error handling and provides clear logging for each operation. The codebase is thoroughly tested, making it easy to maintain and extend.
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+Before running the project, ensure you have the following installed:
 
-- Ruby 3.3.0+
-- Bundler
+- **Ruby**: Version `3.3.6`
+- **Bundler**: Version `2.5.23`
 
-### Installation
+Verify your installed versions:
+```sh
+ruby --version
+bundler --version
+```
 
-1. Clone the repository:
-    ```sh
-    git clone git@github.com:CPNV-ES-BI1-SBB/EXTERNAL-SOURCE-EXTRACT.git
-    ```
+## Installation
 
-2. Install dependencies:
-    ```sh
-    bundle install
-    ```
+1. Install dependencies using Bundler:
+   ```sh
+   bundle install
+   ```
 
-### Running the Project
+2. Set environment variables in `.env` file by copying the `.env.example` file:
+   ```sh
+   cp .env.example .env
+   ```
 
-#### Using Ruby
+3. Update the `.env` file with the required environment variables.
 
-1. Run the main script:
-    ```sh
-    ruby main.rb
-    ```
+## Running the Project
 
-### Running Tests
+You can run the application locally to extract data using the provided API:
 
-#### Using Ruby
+1. Start the Sinatra server:
+   ```sh
+   ruby main.rb
+   ```
 
-1. Run the test script:
-    ```sh
-    ruby run_tests.rb
-    ```
+2. The API will be accessible at:
+   ```
+   http://localhost:4567/
+   ```
 
-## Directory Structure
+3. Example API endpoint to extract data:
+   ```
+   GET http://localhost:4567/api/v1/extract?endpoint=<URL>
+   ```
+
+Replace `<URL>` with the desired API endpoint to extract data.
+
+---
+
+## Testing the Project
+
+The project includes a comprehensive test suite using Minitest. To run the tests:
+
+1. Run all tests:
+   ```sh
+   ruby run_tests.rb
+   ```
+
+2. Run a specific test:
+   ```sh
+   ruby -Itest test/test_extractor.rb --name test_extract_all_data_without_exceptions
+   ```
+
+---
+
+## Contributing
+
+We welcome contributions to improve the project. Follow these guidelines to ensure consistency:
+
+### Conventional Commit Messages
+
+Use the following structure for your commit messages:
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation changes
+- **style**: Code style changes (formatting, missing semi-colons, etc.)
+- **refactor**: Code restructuring without functionality changes
+- **test**: Adding or updating tests
+- **chore**: Maintenance tasks (e.g., dependency updates)
+
+#### Example Commit Messages
+
+- `feat: add support for retry logic`
+- `fix: resolve log rotation issue`
+- `docs: update testing instructions`
+
+---
+
+## Additional Information
+
+### Logging
+The application uses a custom logger (`CLogger`) to log informational and error messages:
+- Logs are saved in `extractor_log.txt` and `server_log.txt`.
+- Archive logs to maintain historical records.
+
+### Error Handling
+The project defines custom exceptions for specific error scenarios:
+- **MaxRetriesReachedError**: Raised when the extractor exceeds the maximum retries during data retrieval.
+
+### Directory Structure
 
 ```
 ├── config/
-│   └── config.yml
 ├── docs/
-│   ├── class_diagram.puml
-│   └── sequence_diagram.puml
 ├── lib/
-│   ├── api_client.rb
-│   ├── extractor.rb
-│   └── logger.rb
-├── main.rb
-├── README.md
-├── run_tests.rb
+├── main.rb                 # Main Sinatra application file
+├── README.md               
+├── run_tests.rb            # Test runner script
 ├── test/
-│   ├── mocks/
-│   ├── test_extractor.rb
-│   └── test_helper.rb
+│   ├── mocks/              # Mock data for tests
 ```
 
-## Contact
-
-If needed, you can create an issue on GitHub, and we will try to respond as quickly as possible.
+---

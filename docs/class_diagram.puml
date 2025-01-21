@@ -1,41 +1,49 @@
 @startuml
 
 skinparam classAttributeIconSize 0
+
 class Extractor {
-  - api_client : APIClient
-  - logger : Logger
-  - oldest_record_stored : JSON
-  - newest_record_received : JSON
+  - http_client : HTTPClient
+  - newest_record_stored : JSON
+  - oldest_record_retrieved : JSON
   - current_data : JSON
   - max_retries : Integer
-  + Extractor(api_client: APIClient, logger: Logger, max_retries: Integer)
-  + extract(oldest_record_stored: JSON) : JSON
-  - handle_duplicate(current_data: JSON, oldest_record_stored: JSON) : Promise
-  - handle_missing(current_data: JSON, oldest_record_stored: JSON) : Promise
-  - get_oldest_record_recieved(current_data: JSON) : JSON
+  - endpoint : String
+  - logger : CLogger
+  + extract(http_client : HTTPClient, newest_record_stored: JSON) : JSON
+  - handle_duplicate() : void
+  - handle_missing() : void
+  - get_missing_data(http_client : HTTPClient, oldest_record_retrieved: JSON) : JSON
 }
 
-class APIClient {
-  - base_url : String
-  - headers : Hash
-  - timeout : Integer
-  + get(endpoint: String, params: Hash) : String
+class HTTPClient {
+  + get(endpoint: String, params: Hash, headers: Hash, timeout: Integer) : JSON
+  - make_request(uri: URI, request: Net::HTTP::Get) : Net::HTTPResponse
+  - handle_response(response: Net::HTTPResponse) : JSON
 }
 
 class Logger {
   - log_path : String
   - last_log : String
+  - file : File
+  + Logger(log_path: String)
   + log_info(message: String) : void
   + log_error(error: String) : void
+  + archive_log(archive_dir: String) : void
+  - write_log(log_message: String) : void
+  - timestamp() : String
 }
 
-Logger -up-*  Extractor
-APIClient -right-*  Extractor
+Exception MaxRetriesReachedError {}
+
+Extractor ..> HTTPClient
+Extractor ..> Logger
+Extractor ..> MaxRetriesReachedError
 
 note as N1
-  Title: Class diagram
-  Date: 13.12.2024
-  Authors: Benoît Pierrehumbert & 
-  Philippe Moeckli
+  Title: Updated Class Diagram
+  Date: 06.01.2025
+  Authors: Benoît Pierrehumbert & Philippe Moeckli
 end note
+
 @enduml

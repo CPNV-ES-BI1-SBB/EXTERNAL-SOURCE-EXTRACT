@@ -4,6 +4,7 @@ GEM
     ansi (1.5.0)
     bigdecimal (3.1.8)
     builder (3.3.0)
+    dotenv (3.1.7)
     httparty (0.20.0)
       mime-types (~> 3.0)
       multi_xml (>= 0.5.2)
@@ -26,9 +27,10 @@ PLATFORMS
   x64-mingw-ucrt
 
 DEPENDENCIES
+  dotenv
   httparty (~> 0.20.0)
   minitest (~> 5.18)
   minitest-reporters
 
 BUNDLED WITH
-   2.5.22
+   2.5.23

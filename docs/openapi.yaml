@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Extract API Service
+  version: 1.0.0
+  description: API to extract data from a specified endpoint.
+paths:
+  /api/v1/extract:
+    get:
+      summary: Retrieve data
+      description: Extracts data from the specified API endpoint.
+      parameters:
+        - name: endpoint
+          in: query
+          description: The target API endpoint from which to extract data.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connections:
+                    type: object
+                    additionalProperties: true
+                    description: Extracted data grouped by connection attributes.
+                  metadata:
+                    type: object
+                    properties:
+                      extracted_at:
+                        type: string
+                        format: date-time
+                        description: The timestamp when the data was extracted.
+                      total_connections:
+                        type: integer
+                        description: The total number of connections retrieved.
+        '400':
+          description: Bad request - Missing or invalid query parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Missing endpoint parameter
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Max retries reached while trying to extract data
+                  details:
+                    type: string
+                    example: Extraction process stopped after 3 retries
+          headers:
+            X-Error-Type:
+              description: The type of error that occurred.
+              schema:
+                type: string
+                enum:
+                  - MaxRetriesReachedError
+                  - StandardError
