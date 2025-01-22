@@ -3,7 +3,11 @@ require 'json'
 require_relative 'lib/extractor'
 require_relative 'lib/http_client'
 require_relative 'lib/logger'
+require_relative 'lib/s3_client'
 require 'dotenv/load'
+
+# Initialisation de S3Client
+s3_client = S3Client.new
 
 # Configure Sinatra
 set :bind, ENV.fetch('BIND_ADDRESS', '0.0.0.0')
@@ -45,6 +49,28 @@ get '/api/v1/extract' do
       error: 'Unexpected error occurred',
       details: e.message
     }.to_json
+  end
+end
+
+# Route pour lister les fichiers
+get '/list_s3' do
+  bucket = params[:bucket] || 'dev.external.source.extract.cld.education'
+  s3_client.list_files(bucket).join("\n")
+end
+
+# Route pour uploader un fichier
+post '/upload_s3' do
+  bucket = params[:bucket] || 'dev.external.source.extract.cld.education'
+  file = params[:file][:tempfile] if params[:file]
+  filename = params[:file][:filename] if params[:file]
+
+  if file && filename
+    object_key = filename
+    s3_client.upload_file(file, bucket, object_key)
+    "Fichier #{filename} uploadé avec succès dans le bucket #{bucket}."
+  else
+    status 400
+    "Aucun fichier fourni pour l'upload."
   end
 end
 
