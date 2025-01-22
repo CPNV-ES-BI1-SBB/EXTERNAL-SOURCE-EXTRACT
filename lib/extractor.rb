@@ -15,10 +15,11 @@ class Extractor
   # @param http_client [Object] The API client for data extraction.
   # @param logger [Object] A logger instance for logging events.
   # @param max_retries [Integer] The maximum number of retries allowed (default: 3).
+  # 
   def initialize()
     @http_client = nil
     @max_retries = ENV.fetch('MAX_RETRIES', 3).to_i
-    @logger = CLogger.new(log_path: ENV.fetch('EXTRACTOR_LOG_PATH', 'extractor_log.txt'))
+    @logger = Logger.new(ENV.fetch('EXTRACT_LOG_PATH', 'logs/extract_log.log'))
     @max_retries = max_retries
     @current_data = {}
     @oldest_record_retrieved = {}
@@ -36,101 +37,94 @@ class Extractor
   def extract(http_client:, endpoint:, newest_record_stored: {})
     @http_client = http_client
     @endpoint = endpoint
-    @logger.log_info(newest_record_stored)
+    @logger.info(newest_record_stored)
 
     begin
-      @logger.log_info("Starting data extraction...")
+      @logger.info("Extracting data from endpoint: #{@endpoint}")
 
       @current_data = @http_client.get(@endpoint)
 
-      @logger.log_info("Current data size: #{@current_data.size}")
+      @logger.info("Current data size: #{@current_data.size}")
 
-      # Met à jour oldest_record_retrieved
       @oldest_record_retrieved = @current_data['connections'].last
 
-      @logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
+      @logger.info("Oldest record retrieved: #{@oldest_record_retrieved}")
 
-      # Gérer les doublons et les données manquantes
       handle_missing()
 
-      @logger.log_info("Data successfully extracted and merged.")
+      @logger.info("Data successfully extracted and merged.")
     end
 
     handle_duplicate()
     @newest_record_stored = @oldest_record_retrieved
-    @logger.log_info("Session records logged.")
-    @logger.log_info("Oldest record retrieved: #{@oldest_record_retrieved}")
-    @logger.log_info("Newest record stored: #{@newest_record_stored}")
+    @logger.info("Session records logged.")
+    @logger.info("Oldest record retrieved: #{@oldest_record_retrieved}")
+    @logger.info("Newest record stored: #{@newest_record_stored}")
     @current_data
   end
 
   private
 
   def handle_duplicate
-    @logger.log_info("Checking for duplicates...")
+    @logger.info("Checking for duplicates...")
 
     if @current_data['connections'].nil? || @current_data['connections'].empty?
-      @logger.log_info("No data to check for duplicates.")
+      @logger.info("No data to check for duplicates.")
       return
     end
 
-    # Convert each record to a hash string for comparison
     initial_size = @current_data['connections'].size
 
-    # Remove duplicates based on the entire record being the same
     @current_data['connections'].uniq! { |record| record.to_json }
 
     duplicates_removed = initial_size - @current_data['connections'].size
-    @logger.log_info("Duplicates removed: #{duplicates_removed}")
+    @logger.info("Duplicates removed: #{duplicates_removed}")
 
     if duplicates_removed > 0
-      @logger.log_info("Duplicate records were found and removed.")
+      @logger.info("Duplicate records were found and removed.")
     else
-      @logger.log_info("No duplicate records detected.")
+      @logger.info("No duplicate records detected.")
     end
   end
 
   def handle_missing
-    @logger.log_info("Checking for missing data...")
+    @logger.info("Checking for missing data...")
 
-    # Check if there are any connections
     if @current_data['connections'].nil? || @current_data['connections'].empty?
-      @logger.log_info("No connections.")
+      @logger.info("No connections.")
       get_missing_data(newest_record_stored: @newest_record_stored)
       return
     end
 
     first_connection_time = @current_data['connections'].first['time']
-    @logger.log_info(first_connection_time)
+    @logger.info(first_connection_time)
     if first_connection_time.nil?
-      @logger.log_error("First connection time missing, cannot validate data integrity.")
+      @logger.error("First connection time missing, cannot validate data integrity.")
       return
     end
 
     begin
-      # Parsing the time and checking if the time is later than 00:15
       first_time = Time.parse(first_connection_time)
       midnight = Time.new(first_time.year, first_time.month, first_time.day, 0, 0, 0)
-      fifteen_minutes_after_midnight = midnight + (15 * 60) # 15 minutes in seconds
+      fifteen_minutes_after_midnight = midnight + (15 * 60)
   
-      # Check if the first record is later than 00:15
       if first_time > fifteen_minutes_after_midnight
-        @logger.log_info("Detected missing data: first record is after 15 minutes past midnight.")
+        @logger.info("Detected missing data: first record is after 15 minutes past midnight.")
         get_missing_data(newest_record_stored: @newest_record_stored)
       else
-        @logger.log_info("No missing data detected.")
+        @logger.info("No missing data detected.")
       end
   
     rescue ArgumentError => e
-      @logger.log_error("Error parsing time: #{e.message}")
+      @logger.error("Error parsing time: #{e.message}")
     end
   end
 
   def get_missing_data(newest_record_stored:)
-    @logger.log_info("Retries left: #{@max_retries}")
+    @logger.info("Retries left: #{@max_retries}")
     if @max_retries > 0
       @max_retries -= 1
-      @logger.log_info("Retrying data extraction...")
+      @logger.info("Retrying data extraction...")
       extract(http_client: @http_client, endpoint: @endpoint, newest_record_stored: newest_record_stored)
     else
       raise MaxRetriesReachedError, "Max retries reached. Cannot retrieve missing data."

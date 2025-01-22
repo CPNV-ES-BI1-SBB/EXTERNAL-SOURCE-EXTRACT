@@ -1,14 +1,14 @@
 require 'json'
+require 'logger'
 require_relative '../lib/extractor'
 require_relative '../lib/http_client'
-require_relative '../lib/logger'
 
 class TestExtractor < Minitest::Test
   def setup
     # Given an API client, a logger
     @endpoint = 'https://api.example.com/data'
     @http_client = HTTPClient.new()
-    @logger = CLogger.new(log_path: ENV.fetch('TEST_LOG_PATH', 'test_log.txt'))
+    @logger = Logger.new(ENV.fetch('TEST_LOG_PATH', 'logs/test_log.txt'))
     @extractor = Extractor.new()
     @newest_record_stored = {
       "connections": [
