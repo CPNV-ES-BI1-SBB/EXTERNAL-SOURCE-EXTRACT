@@ -15,5 +15,3 @@ class MyApp < Sinatra::Base
     'API is running. Use /api/v1/data/extract to create a new job and /api/v1/data/:job_id/download to download the processed data.'
   end
 end
-
-MyApp.run!
