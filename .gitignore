@@ -64,4 +64,4 @@ build-iPhoneSimulator/
 log.txt
 test_log.txt
 # Ignore all files in the archive directory
-/archive/* 
+/logs/*
