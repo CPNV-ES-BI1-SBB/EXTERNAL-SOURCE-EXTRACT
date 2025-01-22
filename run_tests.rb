@@ -5,6 +5,5 @@ Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new) if defined?(Mini
 # Charger les fichiers du projet
 require_relative 'lib/extractor'
 require_relative 'lib/http_client'
-require_relative 'lib/logger'
 
 require_relative 'test/test_extractor'

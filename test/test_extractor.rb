@@ -1,14 +1,14 @@
 require 'json'
+require 'logger'
 require_relative '../lib/extractor'
 require_relative '../lib/http_client'
-require_relative '../lib/logger'
 
 class TestExtractor < Minitest::Test
   def setup
     # Given an API client, a logger
     @endpoint = 'https://api.example.com/data'
     @http_client = HTTPClient.new()
-    @logger = CLogger.new(log_path: ENV.fetch('TEST_LOG_PATH', 'test_log.txt'))
+    @logger = Logger.new(ENV.fetch('TEST_LOG_PATH', 'logs/test_log.txt'))
     @extractor = Extractor.new()
     @newest_record_stored = {
       "connections": [
@@ -73,7 +73,7 @@ class TestExtractor < Minitest::Test
     call_count = 0
   
     # Use a lambda that switches behavior based on call count
-    @http_client.stub(:get, lambda { |endpoint|
+    @http_client.stub(:get, lambda { |endpoint, params|
       call_count += 1
       if call_count == 1
         mock_response_missing
@@ -120,7 +120,7 @@ class TestExtractor < Minitest::Test
     call_count = 0
   
     # Use a lambda to simulate multiple conditions in a single test
-    @http_client.stub(:get, lambda { |endpoint|
+    @http_client.stub(:get, lambda { |endpoint, params|
       call_count += 1
       case call_count
       when 1
@@ -146,7 +146,7 @@ class TestExtractor < Minitest::Test
     # Simulate retry logic with max_retries = 3
     call_count = 0
   
-    @http_client.stub(:get, lambda { |endpoint|
+    @http_client.stub(:get, lambda { |endpoint, params|
       call_count += 1
       if call_count <= @extractor.max_retries
         mock_response_missing

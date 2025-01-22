@@ -21,7 +21,7 @@ class HTTPClient
   #
   # @raise [StandardError] If the request fails.
   #
-  def get(endpoint, params = {})
+  def get(endpoint, params = {}, headers = {})
   uri = URI(endpoint)
 
   # Add query params to the URL

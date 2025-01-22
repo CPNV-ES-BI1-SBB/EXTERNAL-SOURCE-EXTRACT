@@ -9,7 +9,6 @@ class Extractor {
   - current_data : JSON
   - max_retries : Integer
   - endpoint : String
-  - logger : CLogger
   + extract(http_client : HTTPClient, newest_record_stored: JSON) : JSON
   - handle_duplicate() : void
   - handle_missing() : void
@@ -22,27 +21,14 @@ class HTTPClient {
   - handle_response(response: Net::HTTPResponse) : JSON
 }
 
-class Logger {
-  - log_path : String
-  - last_log : String
-  - file : File
-  + Logger(log_path: String)
-  + log_info(message: String) : void
-  + log_error(error: String) : void
-  + archive_log(archive_dir: String) : void
-  - write_log(log_message: String) : void
-  - timestamp() : String
-}
-
 Exception MaxRetriesReachedError {}
 
 Extractor ..> HTTPClient
-Extractor ..> Logger
 Extractor ..> MaxRetriesReachedError
 
 note as N1
   Title: Updated Class Diagram
-  Date: 06.01.2025
+  Date: 22.01.2025
   Authors: Benoît Pierrehumbert & Philippe Moeckli
 end note
 

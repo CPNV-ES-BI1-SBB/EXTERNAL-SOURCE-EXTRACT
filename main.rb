@@ -1,54 +1,17 @@
-require 'sinatra'
-require 'json'
-require_relative 'lib/extractor'
-require_relative 'lib/http_client'
-require_relative 'lib/logger'
-require 'dotenv/load'
+require_relative 'config/env'
+require_relative 'routes/job_routes'
 
-# Configure Sinatra
-set :bind, ENV.fetch('BIND_ADDRESS', '0.0.0.0')
-set :port, ENV.fetch('PORT', '4567').to_i
-
-# Logger instance for the application
-logger = CLogger.new(log_path: ENV.fetch('SERVER_LOG_PATH', 'server_log.txt'))
-
-# Define the /api/v1/extract endpoint
-get '/api/v1/extract' do
-  content_type :json
-  endpoint = params['endpoint']
-
-  if endpoint.nil? || endpoint.empty?
-    logger.log_error("Missing or empty 'endpoint' parameter.")
-    halt 400, { error: 'Missing endpoint parameter' }.to_json
+class MyApp < Sinatra::Base
+  configure do
+    set :logger, Logger.new(ENV.fetch('SERVER_LOG_PATH', 'logs/server_log.log'))
   end
 
-  begin
-    http_client = HTTPClient.new
-    extractor = Extractor.new
-    result = extractor.extract(http_client: http_client, endpoint: endpoint)
+  register JobRoutes
 
-    status 200
-    result.to_json
-
-  rescue Extractor::MaxRetriesReachedError => e
-    logger.log_error("Max retries reached: #{e.message}")
-    headers 'X-Error-Type' => 'MaxRetriesReachedError'
-    halt 500, {
-      error: 'Max retries reached while trying to extract data',
-      details: e.message
-    }.to_json
-
-  rescue StandardError => e
-    logger.log_error("Unexpected error: #{e.message}")
-    headers 'X-Error-Type' => 'StandardError'
-    halt 500, {
-      error: 'Unexpected error occurred',
-      details: e.message
-    }.to_json
+  # Root endpoint for health check
+  get '/' do
+    'API is running. Use /api/v1/data/extract to create a new job and /api/v1/data/:job_id/download to download the processed data.'
   end
 end
 
-# Root endpoint for health check
-get '/' do
-  'API is running. Use /api/v1/extract?endpoint=<URL> to call the extractor.'
-end
+MyApp.run!

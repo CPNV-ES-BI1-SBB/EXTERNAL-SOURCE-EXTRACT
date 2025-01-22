@@ -8,7 +8,7 @@ This project is designed to extract data from external sources and handle variou
 
 Before running the project, ensure you have the following installed:
 
-- **Ruby**: Version `3.3.6`
+- **Ruby**: Version `3.3.6` - [Installation Guide](https://www.ruby-lang.org/en/news/2024/11/05/ruby-3-3-6-released/)
 - **Bundler**: Version `2.5.23`
 
 Verify your installed versions:
@@ -16,6 +16,8 @@ Verify your installed versions:
 ruby --version
 bundler --version
 ```
+
+- **Ruby**: Configuration standard.
 
 ## Installation
 
