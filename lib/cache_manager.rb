@@ -7,8 +7,31 @@ class CacheManager
     @bucket = bucket
   end
 
-  # Method 1: Upload JSON data and update the JSON DB
-  def upload_json_data(uuid, endpoint, data)
+  # Method 1: Update the JSON DB with a new entry
+  def update_json_db(uuid, endpoint)
+    json_db = retrieve_json_db || []
+
+    # Check if the UUID already exists in the JSON DB
+    existing_entry = json_db.find { |item| item["uuid"] == uuid }
+    return if existing_entry
+
+    # Add the new entry
+    entry = { "uuid" => uuid, "endpoint" => endpoint, "date" => Date.today.to_s }
+    json_db << entry
+
+    upload_json_db(json_db)
+  end
+
+  # Method 2: Upload JSON data and update the JSON DB
+  def upload_json_data(uuid, endpoint, data, date = Date.today)
+    # Check if the endpoint already exists in the JSON DB for the given date
+    result = search_json_db(endpoint, date)
+    if result
+      # Use the UUID from the found result to generate a signed URL
+      existing_uuid = result["uuid"]
+      return generate_signed_url(existing_uuid)
+    end
+
     # Upload the JSON data file to S3
     path = "cache/#{uuid}.json"
     @storage_provider.upload_file(data.to_json, @bucket, path)
@@ -17,22 +40,14 @@ class CacheManager
     update_json_db(uuid, endpoint)
   end
 
-  # Method 2: Retrieve, update the JSON DB with new data, and upload it back to S3
-  def update_json_db(uuid, endpoint)
-    json_db = retrieve_json_db(Date.today) || []
-    entry = { "uuid" => uuid, "endpoint" => endpoint, "date" => Date.today.to_s }
-    json_db << entry
-    upload_json_db(json_db, Date.today)
-  end
-
   # Method 3: Retrieve JSON DB and search by UUID or endpoint, with optional date
   def search_json_db(query, date = Date.today)
-    json_db = retrieve_json_db(date)
+    json_db = retrieve_json_db
     return nil unless json_db
 
-    # Find the entry where UUID or endpoint matches the query
-    entry = json_db.find { |item| item["uuid"] == query || item["endpoint"] == query }
-    entry ? entry.slice("endpoint", "date") : nil
+    # Find the entry where UUID or endpoint matches the query and date matches
+    entry = json_db.find { |item| (item["uuid"] == query || item["endpoint"] == query) && item["date"] == date.to_s }
+    entry ? entry : nil
   end
 
   # Method 4: Generate a signed URL for a UUID-based object valid for a day
@@ -43,21 +58,26 @@ class CacheManager
 
   private
 
-  # Retrieve the JSON DB from S3 for a specific date
-  def retrieve_json_db(date)
-    json_db_path = "json_db/#{date}.json"
+  # Retrieve the JSON DB from S3
+  def retrieve_json_db
+    json_db_path = "json_db.json"
+
+    # List all files in the bucket
     files = @storage_provider.list_files(@bucket)
     return nil unless files.include?(json_db_path)
 
+    # Retrieve the file content
     data = @storage_provider.get_file(@bucket, json_db_path)
+
+    # Parse the JSON content
     JSON.parse(data)
   rescue StandardError
     nil
   end
 
-  # Upload the updated JSON DB to S3 for a specific date
-  def upload_json_db(json_db, date)
-    json_db_path = "json_db/#{date}.json"
+  # Upload the updated JSON DB to S3
+  def upload_json_db(json_db)
+    json_db_path = "json_db.json"
     @storage_provider.upload_file(json_db.to_json, @bucket, json_db_path)
   end
 end

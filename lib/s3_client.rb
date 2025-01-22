@@ -28,6 +28,17 @@ class S3Client < StorageProvider
     @s3.delete_object(bucket: bucket, key: object_key)
   end
 
+  # Method to retrieve a file's content from S3
+  def get_file(bucket, object_key)
+    response = @s3.get_object(bucket: bucket, key: object_key)
+    response.body.read
+  rescue Aws::S3::Errors::NoSuchKey
+    nil # Return nil if the file does not exist
+  rescue StandardError => e
+    puts "ERROR: Failed to retrieve file '#{object_key}' from bucket '#{bucket}' - #{e.message}"
+    nil
+  end
+
   # Method to generate a presigned URL for a file
   def generate_presigned_url(bucket, object_key, expiration = 3600)
     # Ensure expiration is an integer
