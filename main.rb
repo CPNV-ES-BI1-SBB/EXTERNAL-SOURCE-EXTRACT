@@ -1,12 +1,13 @@
-require_relative 'config/env'
 require_relative 'routes/job_routes'
+
+$jobs = {}
 
 class MyApp < Sinatra::Base
   configure do
     set :logger, Logger.new(ENV.fetch('SERVER_LOG_PATH', 'logs/server_log.log'))
-
+    set :bind, ENV.fetch('BIND_ADDRESS', '0.0.0.0')
+    set :port, ENV.fetch('PORT', '4567').to_i
   end
-
   register JobRoutes
 
   # Root endpoint for health check

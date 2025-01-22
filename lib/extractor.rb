@@ -38,7 +38,7 @@ class Extractor
     @http_client = http_client
     @endpoint = endpoint
     @logger.info(newest_record_stored)
-    @params = { 'Content-Type': 'application/json' }
+    @params = ENV.fetch('EXTRACT_PARAMS', {}).to_h
 
     begin
       @logger.info("Extracting data from endpoint: #{@endpoint}")
