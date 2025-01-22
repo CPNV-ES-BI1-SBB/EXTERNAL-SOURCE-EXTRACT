@@ -2,12 +2,27 @@ require 'sinatra'
 require 'json'
 require 'securerandom'
 require 'logger'
+require 'fileutils'
 require_relative '../lib/extractor'
 require_relative '../lib/http_client'
 
 module JobRoutes
 
-  $jobs = {}
+  JOBS_FILE = ENV.fetch('JOBS_FILE_PATH', '/app/data/jobs.json')
+
+  def self.load_jobs
+    if File.exist?(JOBS_FILE)
+      JSON.parse(File.read(JOBS_FILE))
+    else
+      {}
+    end
+  end
+
+  def self.save_jobs(jobs)
+    File.write(JOBS_FILE, jobs.to_json)
+  end
+
+  $jobs = load_jobs
 
   def self.registered(app)
     app.post '/api/v1/data/extract' do
@@ -22,16 +37,18 @@ module JobRoutes
       end
 
       job_id = SecureRandom.uuid
-      $jobs[job_id] = { status: 'in_progress', endpoint: endpoint }
+      $jobs[job_id] = { status: 'in_progress', endpoint: endpoint, created_at: Time.now }
+      JobRoutes.save_jobs($jobs)
       settings.logger.info("Job created with ID: #{job_id}")
 
       begin
         http_client = HTTPClient.new
         extractor = Extractor.new
         result = extractor.extract(http_client: http_client, endpoint: endpoint)
-
+        
         $jobs[job_id][:status] = 'completed'
         $jobs[job_id][:data] = result
+        JobRoutes.save_jobs($jobs)
         settings.logger.info("Data extraction completed for job ID: #{job_id}")
 
         status 201
@@ -40,11 +57,13 @@ module JobRoutes
       rescue Extractor::MaxRetriesReachedError => e
         settings.logger.error("Max retries reached: #{e.message}")
         $jobs[job_id][:status] = 'failed'
+        JobRoutes.save_jobs($jobs)
         halt 500, { error: 'Max retries reached while trying to extract data', details: e.message }.to_json
 
       rescue StandardError => e
         settings.logger.error("Unexpected error: #{e.message}")
         $jobs[job_id][:status] = 'failed'
+        JobRoutes.save_jobs($jobs)
         halt 500, { error: 'Unexpected error occurred', details: e.message }.to_json
       end
     end
@@ -52,19 +71,14 @@ module JobRoutes
     app.get '/api/v1/data/:job_id/download' do
       content_type :json
       job_id = params['job_id']
-      settings.logger.info("Received request to download data for job ID: #{job_id}")
-
       job = $jobs[job_id]
+
       if job.nil?
-        settings.logger.error("Job not found for ID: #{job_id}")
         halt 404, { error: 'Job not found' }.to_json
       elsif job[:status] != 'completed'
-        settings.logger.error("Job is not completed yet for ID: #{job_id}")
         halt 400, { error: 'Job is not completed yet' }.to_json
       else
-        settings.logger.info("Data downloaded for job ID: #{job_id}")
-        status 200
-        job[:data].to_json
+        { data: job[:data] }.to_json
       end
     end
   end

@@ -1,6 +1,6 @@
 require_relative 'routes/job_routes'
 
-class MyApp < Sinatra::Base
+class DataExtractorApp < Sinatra::Base
   configure do
     set :logger, Logger.new(ENV.fetch('SERVER_LOG_PATH', 'logs/server_log.log'))
     set :bind, ENV.fetch('BIND_ADDRESS', '0.0.0.0')
@@ -14,4 +14,4 @@ class MyApp < Sinatra::Base
   end
 end
 
-MyApp.run!
+DataExtractorApp.run! if $PROGRAM_NAME == __FILE__
