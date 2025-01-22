@@ -38,11 +38,12 @@ class Extractor
     @http_client = http_client
     @endpoint = endpoint
     @logger.info(newest_record_stored)
+    @params = { 'Content-Type': 'application/json' }
 
     begin
       @logger.info("Extracting data from endpoint: #{@endpoint}")
 
-      @current_data = @http_client.get(@endpoint)
+      @current_data = @http_client.get(@endpoint, @params)
 
       @logger.info("Current data size: #{@current_data.size}")
 
