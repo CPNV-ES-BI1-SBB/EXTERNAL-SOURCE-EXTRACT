@@ -38,12 +38,12 @@ class Extractor
     @http_client = http_client
     @endpoint = endpoint
     @logger.info(newest_record_stored)
-    @params = ENV.fetch('EXTRACT_PARAMS', {}).to_h
+    @headers = {}
 
     begin
       @logger.info("Extracting data from endpoint: #{@endpoint}")
 
-      @current_data = @http_client.get(@endpoint, @params)
+      @current_data = @http_client.get(@endpoint, @headers)
 
       @logger.info("Current data size: #{@current_data.size}")
 

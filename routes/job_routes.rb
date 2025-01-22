@@ -6,6 +6,9 @@ require_relative '../lib/extractor'
 require_relative '../lib/http_client'
 
 module JobRoutes
+
+  $jobs = {}
+
   def self.registered(app)
     app.post '/api/v1/data/extract' do
       content_type :json
