@@ -6,8 +6,5 @@ services:
     volumes:
       - .:/app
       - logs:/app/logs
-    environment:
-      - NODE_ENV=development
-
 volumes:
   logs:
