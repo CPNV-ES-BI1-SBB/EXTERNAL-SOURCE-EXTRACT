@@ -16,11 +16,6 @@ COPY . /app
 
 COPY .env /app/.env
 
-RUN mkdir -p /app/logs
-RUN mkdir -p /app/data
-
 CMD [ "ruby", "main.rb" ]
 
 EXPOSE 4567
-
-VOLUME ["/app/data", "/app/logs"]

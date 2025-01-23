@@ -5,11 +5,5 @@ services:
       - "4567:4567"
     volumes:
       - .:/app
-      - job_data:/app/data
-      - logs:/app/logs
     environment:
       - NODE_ENV=development
-
-volumes:
-  job_data:
-  logs:
