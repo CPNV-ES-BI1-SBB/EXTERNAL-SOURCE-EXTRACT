@@ -33,7 +33,7 @@ class CacheManager
     end
 
     # Upload the JSON data file to S3
-    path = "cache/#{uuid}.json"
+    path = "cache/#{uuid}"
     @storage_provider.upload_file(data.to_json, @bucket, path)
 
     # Update the JSON DB with the new entry
@@ -52,7 +52,7 @@ class CacheManager
 
   # Method 4: Generate a signed URL for a UUID-based object valid for a day
   def generate_signed_url(uuid)
-    path = "cache/#{uuid}.json"
+    path = "cache/#{uuid}"
     @storage_provider.generate_presigned_url(@bucket, path, 86_400) # 1 day = 86,400 seconds
   end
 

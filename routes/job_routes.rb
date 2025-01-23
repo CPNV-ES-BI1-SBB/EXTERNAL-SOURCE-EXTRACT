@@ -31,15 +31,16 @@ module JobRoutes
           status 200
           return { status: 'completed', url: settings.cache_manager.generate_signed_url(cached_data['uuid']) }.to_json
         end
-        
+
         http_client = HTTPClient.new
         extractor = Extractor.new
         result = extractor.extract(http_client: http_client, endpoint: endpoint)      
 
         settings.logger.info("Data extraction completed for job ID: #{job_id}")
+        settings.cache_manager.upload_json_data(job_id, endpoint, result)
         
         status 200
-        { status: 'completed', url: settings.cache_manager.upload_json_data(job_id, endpoint, result) }.to_json
+        { status: 'completed', url: settings.cache_manager.generate_signed_url(job_id) }.to_json
 
       rescue Extractor::MaxRetriesReachedError => e
         settings.logger.error("Max retries reached: #{e.message}")
