@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API to extract data from a specified endpoint.
 paths:
-  /api/v1/extract:
+  /api/v1/data/extract:
     get:
       summary: Retrieve data
       description: Extracts data from the specified API endpoint.
