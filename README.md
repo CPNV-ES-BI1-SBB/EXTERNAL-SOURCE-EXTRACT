@@ -10,6 +10,7 @@ Before running the project, ensure you have the following installed:
 
 - **Ruby**: Version `3.3.6` - [Installation Guide](https://www.ruby-lang.org/en/news/2024/11/05/ruby-3-3-6-released/)
 - **Bundler**: Version `2.5.22`
+- **Docker**: Version `20.10.8` - [Installation Guide](https://docs.docker.com/get-docker/)
 
 Verify your installed versions:
 ```sh
@@ -34,6 +35,17 @@ bundler --version
 3. Update the `.env` file with the required environment variables.
 
 ## Running the Project
+
+### Docker
+
+To run the application using Docker:
+
+1. Start the Docker container:
+   ```sh
+   docker-compose up --build -d
+   ```
+
+### Local
 
 You can run the application locally to extract data using the provided API:
 
