@@ -11,7 +11,7 @@ class DataExtractorApp < Sinatra::Base
   register JobRoutes
 
   s3Client = S3Client.new()
-  cache_manager = CacheManager.new(s3Client, ENV['S3_BUCKET'])
+  cache_manager = CacheManager.new(s3Client, ENV['AWS_BUCKET_NAME'])
 
   set :cache_manager, cache_manager
 
