@@ -61,7 +61,12 @@ You can run the application locally to extract data using the provided API:
 
 3. Example API endpoint to extract data:
    ```
-   GET http://localhost:4567/api/v1/extract?endpoint=<URL>
+   POST http://localhost:4567/api/v1/extract
+
+   Request Body:
+   {
+     "url": "<URL>"
+   }
    ```
 
 Replace `<URL>` with the desired API endpoint to extract data.
