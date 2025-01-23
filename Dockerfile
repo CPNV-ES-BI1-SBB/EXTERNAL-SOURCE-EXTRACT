@@ -14,8 +14,6 @@ RUN bundle install
 
 COPY . /app
 
-COPY .env /app/.env
-
 RUN mkdir -p /app/logs
 
 CMD [ "ruby", "main.rb" ]
