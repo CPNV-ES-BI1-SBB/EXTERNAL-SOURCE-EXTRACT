@@ -5,16 +5,20 @@ info:
   description: API to extract data from a specified endpoint.
 paths:
   /api/v1/data/extract:
-    get:
+    post:
       summary: Retrieve data
       description: Extracts data from the specified API endpoint.
-      parameters:
-        - name: endpoint
-          in: query
-          description: The target API endpoint from which to extract data.
-          required: true
-          schema:
-            type: string
+      requestBody:
+        description: The request body containing the target API endpoint.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                endpoint:
+                  type: string
+                  description: The target API endpoint from which to extract data.
       responses:
         '200':
           description: Data retrieved successfully
@@ -38,7 +42,7 @@ paths:
                         type: integer
                         description: The total number of connections retrieved.
         '400':
-          description: Bad request - Missing or invalid query parameters.
+          description: Bad request - Missing or invalid request body.
           content:
             application/json:
               schema:
