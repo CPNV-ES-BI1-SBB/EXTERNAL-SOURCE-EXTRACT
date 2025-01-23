@@ -21,10 +21,39 @@ class HTTPClient {
   - handle_response(response: Net::HTTPResponse) : JSON
 }
 
+class S3Client {
+  - s3 : Aws::S3::Client
+  + upload_file(file: String, bucket: String, object_key: String) : void
+  + list_files(bucket: String) : Array
+  + delete_file(bucket: String, object_key: String) : void
+  + get_file(bucket: String, object_key: String) : String
+  + generate_presigned_url(bucket: String, object_key: String, expiration: Integer = 3600) : String
+}
+
+class StorageProvider {
+  + upload_file(file: String, bucket: String, object_key: String)
+  + list_files(bucket: String)
+  + delete_file(bucket: String, object_key: String)
+}
+
+class CacheManager {
+  - storage_provider : StorageProvider
+  - bucket : String
+  + update_json_db(uuid: String, endpoint: String) : void
+  + upload_json_data(uuid: String, endpoint: String, data: JSON, date: Date) : void
+  + search_json_db(query: String, date: Date = Date.today) : JSON
+  + generate_signed_url(uuid: String) : String
+  - retrieve_json_db() : JSON
+  - upload_json_db(json_db: JSON) : void
+}
+
 Exception MaxRetriesReachedError {}
 
 Extractor ..> HTTPClient
 Extractor ..> MaxRetriesReachedError
+
+S3Client --|> StorageProvider
+CacheManager ..> StorageProvider
 
 note as N1
   Title: Updated Class Diagram
