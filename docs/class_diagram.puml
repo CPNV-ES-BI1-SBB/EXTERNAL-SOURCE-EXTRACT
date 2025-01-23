@@ -26,7 +26,7 @@ class S3Client {
   + generate_presigned_url(bucket: String, object_key: String, expiration: Integer = 3600) : String
 }
 
-class StorageProvider {
+Interface StorageProvider {
   + upload_file(file: String, bucket: String, object_key: String)
   + list_files(bucket: String)
   + delete_file(bucket: String, object_key: String)
