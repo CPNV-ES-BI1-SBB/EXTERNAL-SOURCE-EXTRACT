@@ -27,20 +27,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  connections:
-                    type: object
-                    additionalProperties: true
-                    description: Extracted data grouped by connection attributes.
-                  metadata:
-                    type: object
-                    properties:
-                      extracted_at:
-                        type: string
-                        format: date-time
-                        description: The timestamp when the data was extracted.
-                      total_connections:
-                        type: integer
-                        description: The total number of connections retrieved.
+                  dataSource:
+                    type: string
+                    description: The url to the extracted data.
+                    example: https://s3.eu-south-1.amazonaws.com/dev.external.source.extract.cld.education/cache/6395b20f-42d6-4be4-b0cf-e5ff5fd73d10?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA2KFJKL4O5EQPXSVM%2F20250123%2Feu-south-1%2Fs3%2Faws4_request&X-Amz-Date=20250123T113557Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=4e9e7161bc3492fe74032b06b4a2eae31eb03c845a96702459304cc8d2dc97be
         '400':
           description: Bad request - Missing or invalid request body.
           content:
@@ -64,11 +54,3 @@ paths:
                   details:
                     type: string
                     example: Extraction process stopped after 3 retries
-          headers:
-            X-Error-Type:
-              description: The type of error that occurred.
-              schema:
-                type: string
-                enum:
-                  - MaxRetriesReachedError
-                  - StandardError
