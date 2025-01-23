@@ -31,12 +31,7 @@ class Extractor
   def extract(http_client:, endpoint:)
     @http_client = http_client
     @endpoint = endpoint
-
-    if ENV['DATA_FORMAT'] == 'JSON'
-      @headers = {'Accept' => 'application/json'}
-    else
-      @headers = {}
-    end
+    @headers = {'Accept' => 'application/json'}
 
     begin
       @logger.info("Extracting data from endpoint: #{@endpoint}")

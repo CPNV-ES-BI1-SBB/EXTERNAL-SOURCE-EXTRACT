@@ -1,8 +1,6 @@
-require 'sinatra'
 require 'json'
 require 'securerandom'
 require 'logger'
-require 'fileutils'
 require_relative '../lib/extractor'
 require_relative '../lib/http_client'
 
