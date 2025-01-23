@@ -1,0 +1,4 @@
+# Logfile created on 2025-01-23 10:43:13 +0000 by logger.rb/v1.6.2
+I, [2025-01-23T10:43:32.362197 #1]  INFO -- : Received request to extract data. Request endpoint: https://search.ch/timetable/api/stationboard.json?stop=lausanne&time=00:01&date=01/11/2025&show_tracks=1&show_subsequent_stops=1&show_delays=1&show_trackchanges=1&transportation_types=train,tram,bus,ship,cableway
+I, [2025-01-23T10:43:32.363780 #1]  INFO -- : Job created with ID: 8d24b129-23e5-44af-a4c1-2ba8821bbe08
+I, [2025-01-23T10:43:33.362697 #1]  INFO -- : Data extraction completed for job ID: 8d24b129-23e5-44af-a4c1-2ba8821bbe08

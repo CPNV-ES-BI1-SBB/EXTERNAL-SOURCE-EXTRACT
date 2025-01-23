@@ -4,15 +4,11 @@ skinparam classAttributeIconSize 0
 
 class Extractor {
   - http_client : HTTPClient
-  - newest_record_stored : JSON
-  - oldest_record_retrieved : JSON
   - current_data : JSON
-  - max_retries : Integer
   - endpoint : String
-  + extract(http_client : HTTPClient, newest_record_stored: JSON) : JSON
-  - handle_duplicate() : void
-  - handle_missing() : void
-  - get_missing_data(http_client : HTTPClient, oldest_record_retrieved: JSON) : JSON
+  + extract(http_client : HTTPClient, endpoint : String) : JSON
+
+
 }
 
 class HTTPClient {
@@ -57,7 +53,7 @@ CacheManager ..> StorageProvider
 
 note as N1
   Title: Updated Class Diagram
-  Date: 22.01.2025
+  Date: 23.01.2025
   Authors: Benoît Pierrehumbert & Philippe Moeckli
 end note
 
