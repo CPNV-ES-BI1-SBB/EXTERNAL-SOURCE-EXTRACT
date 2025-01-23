@@ -38,7 +38,12 @@ class Extractor
     @http_client = http_client
     @endpoint = endpoint
     @logger.info(newest_record_stored)
-    @headers = {}
+
+    if ENV['DATA_FORMAT'] == 'JSON'
+      @headers = {'Content-Type' => 'application/json'}
+    else
+      @headers = {}
+    end
 
     begin
       @logger.info("Extracting data from endpoint: #{@endpoint}")
