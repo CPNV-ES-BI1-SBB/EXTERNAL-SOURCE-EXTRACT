@@ -29,7 +29,7 @@ module JobRoutes
         if cached_data
           settings.logger.info("Data already extracted for endpoint: #{endpoint}")
           status 200
-          return { status: 'completed', url: settings.cache_manager.generate_signed_url(cached_data['uuid']) }.to_json
+          return { dataSource: settings.cache_manager.generate_signed_url(cached_data['uuid']) }.to_json
         end
 
         http_client = HTTPClient.new
@@ -40,7 +40,7 @@ module JobRoutes
         settings.cache_manager.upload_json_data(job_id, endpoint, result)
         
         status 200
-        { status: 'completed', url: settings.cache_manager.generate_signed_url(job_id) }.to_json
+        { dataSource: settings.cache_manager.generate_signed_url(job_id) }.to_json
 
       rescue Extractor::MaxRetriesReachedError => e
         settings.logger.error("Max retries reached: #{e.message}")
