@@ -33,7 +33,7 @@ class Extractor
     @endpoint = endpoint
 
     if ENV['DATA_FORMAT'] == 'JSON'
-      @headers = {'Content-Type' => 'application/json'}
+      @headers = {'Accept' => 'application/json'}
     else
       @headers = {}
     end

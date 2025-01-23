@@ -17,19 +17,25 @@ class HTTPClient
   #
   # @param endpoint [String] The endpoint to send the request to (e.g., '/data').
   # @param params [Hash] Query parameters to include in the request if needed.
+  # @param headers [Hash] Headers to include in the request.
   # @return [JSON] The JSON response from the API.
   #
   # @raise [StandardError] If the request fails.
   #
   def get(endpoint, params = {}, headers = {})
-  uri = URI(endpoint)
+    uri = URI(endpoint)
 
-  # Add query params to the URL
-  uri.query = URI.encode_www_form(params) unless params.empty?
+    # Add query params to the URL
+    uri.query = URI.encode_www_form(params) unless params.empty?
 
-  request = Net::HTTP::Get.new(uri)
+    request = Net::HTTP::Get.new(uri)
 
-  make_request(uri, request)
+    # Set headers
+    headers.each do |key, value|
+      request[key] = value
+    end
+
+    make_request(uri, request)
   end
 
   private
