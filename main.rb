@@ -1,4 +1,6 @@
 require_relative 'routes/job_routes'
+require_relative 'lib/s3_client'
+require_relative 'lib/cache_manager'
 
 class DataExtractorApp < Sinatra::Base
   configure do
@@ -7,6 +9,12 @@ class DataExtractorApp < Sinatra::Base
     set :port, ENV.fetch('PORT', '4567').to_i
   end
   register JobRoutes
+
+  s3Client = S3Client.new()
+  cache_manager = CacheManager.new(s3Client, ENV['S3_BUCKET'])
+
+  set :cache_manager, cache_manager
+
 
   # Root endpoint for health check
   get '/' do
