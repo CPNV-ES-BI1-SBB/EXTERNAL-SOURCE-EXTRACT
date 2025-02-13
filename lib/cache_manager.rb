@@ -53,7 +53,7 @@ class CacheManager
   # Method 4: Generate a signed URL for a UUID-based object valid for a day
   def generate_signed_url(uuid)
     path = "cache/#{uuid}"
-    @storage_provider.generate_presigned_url(@bucket, path, ENV["AWS_URL_EXPIRATION"])
+    @storage_provider.generate_presigned_url(@bucket, path, ENV["AWS_URL_EXPIRATION"].to_i)
   end
 
   private
