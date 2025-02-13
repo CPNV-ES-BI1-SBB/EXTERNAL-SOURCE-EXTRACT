@@ -7,5 +7,5 @@ gem 'dotenv'
 gem 'sinatra', '~> 4.1', '>= 4.1.1'
 gem 'rackup', '~> 2.2', '>= 2.2.1'
 gem 'puma', '~> 6.5'
-
+gem 'nokogiri', '~> 1.18', '>= 1.18.2'
 gem 'aws-sdk-s3', '~> 1.178'
