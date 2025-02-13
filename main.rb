@@ -7,7 +7,7 @@ class DataExtractorApp < Sinatra::Base
     set :logger, Logger.new(ENV.fetch('SERVER_LOG_PATH', 'logs/server_log.log'))
     set :bind, ENV.fetch('BIND_ADDRESS', '0.0.0.0')
     set :port, ENV.fetch('PORT', '4567').to_i
-    set :environment, :production
+    set :environment, ENV.fetch('ENVIRONMENT', 'development')
   end
   register JobRoutes
 
