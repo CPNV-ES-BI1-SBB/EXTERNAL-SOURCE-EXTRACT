@@ -24,7 +24,7 @@ module JobRoutes
       begin
         cached_data = settings.cache_manager.search_json_db(endpoint)
           
-        if cached_data
+        if cached_data # TODO: externalize logic to cache.
           settings.logger.info("Data already extracted for endpoint: #{endpoint}")
           status 200
           return { dataSource: settings.cache_manager.generate_signed_url(cached_data['uuid']) }.to_json
